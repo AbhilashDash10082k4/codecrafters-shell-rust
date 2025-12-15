@@ -1,10 +1,6 @@
 #![allow(unused_imports)]
 use std::io::{self, Write};
 fn main() {
-    // TODO: Uncomment the code below to pass the first stage
-    print!("$ ");
-    io::stdout().flush().unwrap();
-
     /* Collecting user arguments in a vec-
     Reference -chapter 12 I/O Project
     let command:Vec<String> = env::args().collect();
@@ -18,6 +14,8 @@ fn main() {
     prints the line no. and the val where the dbg! is used and takes ownership of the val (println! takes reference) and returns it back to the expression*, else completely takes the ownership of the variable passed into it
     */
     loop {
+        print!("$ ");
+        io::stdout().flush().unwrap();
         let mut command = String::new();
         //taking the user i/p
         io::stdin().read_line(&mut command).unwrap();
