@@ -20,6 +20,9 @@ fn main() {
         //taking the user i/p
         io::stdin().read_line(&mut command).unwrap();
         //parsing the command
-        println!("{}: command not found", command.trim())
+        if command.trim() == "exit" {
+            break
+        }
+        println!("{}: command not found", &command.trim());
     }
 }
