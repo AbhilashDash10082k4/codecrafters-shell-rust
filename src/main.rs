@@ -13,15 +13,47 @@ fn main() {
 
     prints the line no. and the val where the dbg! is used and takes ownership of the val (println! takes reference) and returns it back to the expression*, else completely takes the ownership of the variable passed into it
     */
+    fn exit(command: &str) -> bool {
+        if command.trim() == "exit" {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    fn echo(command: &String) -> (&str, &str) {
+        let processing = command.as_bytes().iter().enumerate();
+        let mut space_idx = None;
+        for (i, &item) in processing {
+            if item == b' ' {
+                space_idx = Some(i);
+                break;
+            }
+        }
+        match space_idx {
+        Some(i) => {
+            let cmd = &command[..i];
+            let args = command[i + 1..].trim();
+            (cmd, args)
+        }
+        None => (command.trim(), ""),
+    }
+    }
     loop {
         print!("$ ");
         io::stdout().flush().unwrap();
         let mut command = String::new();
+
         //taking the user i/p
         io::stdin().read_line(&mut command).unwrap();
+
         //parsing the command
-        if command.trim() == "exit" {
-            break
+        if exit(&command) {
+            break;
+        }
+        let (echo, args) = echo(&command);
+        if echo == "echo" {
+            println!("{}", args);
+            continue;
         }
         println!("{}: command not found", &command.trim());
     }
