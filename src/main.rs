@@ -58,7 +58,7 @@ fn main() {
                     }
                 }
                 if !found {
-                    println!("{}: command not found", command_to_be_printed.unwrap())
+                    println!("{}: not found", command_to_be_printed.unwrap())
                 }
             }
             None => {},
