@@ -30,13 +30,39 @@ fn main() {
             }
         }
         match space_idx {
-        Some(i) => {
-            let cmd = &command[..i];
-            let args = command[i + 1..].trim();
-            (cmd, args)
+            Some(i) => {
+                let cmd = &command[..i];
+                let args = command[i + 1..].trim();
+                (cmd, args)
+            }
+            None => (command.trim(), ""),
         }
-        None => (command.trim(), ""),
     }
+    fn type_command(command: &str) {
+        let type_cmnd = command.trim().starts_with("type ");
+        if !type_cmnd {
+            return;
+        }
+        let command_to_be_printed = command.trim().strip_prefix("type ");
+
+        let list_of_builtin_cmmnds = vec!["echo", "exit", "type"];
+        let mut found = false;
+
+        match command_to_be_printed {
+            Some(x) => {
+                for item in list_of_builtin_cmmnds {
+                    if &x == &item {
+                        println!("{} is a shell builtin", &item.trim());
+                        found = true;
+                        break;
+                    }
+                }
+                if !found {
+                    println!("{}: command not found", command_to_be_printed.unwrap())
+                }
+            }
+            None => {},
+        }
     }
     loop {
         print!("$ ");
@@ -53,6 +79,11 @@ fn main() {
         let (echo, args) = echo(&command);
         if echo == "echo" {
             println!("{}", args);
+            continue;
+        }
+
+        if command.trim().contains("type ") {
+            type_command(&command);
             continue;
         }
         println!("{}: command not found", &command.trim());
