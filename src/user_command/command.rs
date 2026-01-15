@@ -65,7 +65,7 @@ impl Command {
     };
 
     // 3️⃣ Search PATH
-    for dir in path_var.split(MAIN_SEPARATOR_STR) {
+    for dir in path_var.split(':') {
         let full_path = Path::new(dir).join(command_to_be_printed);
 
         if !full_path.is_file() {
