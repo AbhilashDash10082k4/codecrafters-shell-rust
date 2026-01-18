@@ -21,7 +21,6 @@ pub fn handle(user_input: &UserInput) -> bool {
     };
 
     match Command::new(&executable_file_path)
-        .arg(program_name)
         .args(user_args)
         .output()
     {
