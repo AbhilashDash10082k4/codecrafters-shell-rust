@@ -1,4 +1,4 @@
-use std::{process::Command};
+use std::process::{Command, Stdio};
 
 use crate::{commands::command::UserInput, utils::path::find_executable};
 
@@ -7,12 +7,17 @@ pub fn handle(user_input: &UserInput) -> bool {
     /*M1- capturing command line arguments
         let cli_args: Vec<String> = env::args().collect();
     */
-    /*M2*/
-    let cmnd_arr: Vec<&str> = user_input.raw.split(' ').collect();
+    /*M2
+    split_whitespace used instead of split(' ') to handle multiple whitespaces
+    */
+    let cmnd_arr: Vec<&str> = user_input.raw.split_whitespace().collect();
+    if cmnd_arr.is_empty() {
+        return false;
+    }
     let program_name = cmnd_arr[0];
     let user_args = &cmnd_arr[1..];
-    
-    match find_executable(program_name) {
+
+    let executable_path = match find_executable(program_name) {
         Some(p) => p,
         None => {
             eprintln!("{}: command not found", program_name);
@@ -20,21 +25,22 @@ pub fn handle(user_input: &UserInput) -> bool {
         }
     };
 
-    match Command::new(&program_name)
+    let mut child =match Command::new(&executable_path)
+        .arg(program_name)
         .args(user_args)
-        .output()
+        .stdin(Stdio::inherit())
+        .stdout(Stdio::inherit())
+        .stderr(Stdio::inherit())
+        .spawn()
     {
-        Ok(output) => {
-            print!("{}", String::from_utf8_lossy(&output.stdout));
-            if !output.stderr.is_empty() {
-                eprint!("{}", String::from_utf8_lossy(&output.stderr));
-            }
-            // println!("Program was passed {} args (including program name).", cmnd_arr.len());
-            return true;
-        }
+        Ok(c) => c,
         Err(e) => {
-            eprintln!("Error executing {}: {}", program_name, e);
+            eprintln!("Error executing {program_name}: {e}");
             return false;
         }
-    }
+    };
+    // Wait for program to finish before showing prompt again
+    let _ = child.wait();
+    true
+    
 }
