@@ -25,15 +25,16 @@ pub fn handle(user_input: &UserInput) -> bool {
         .output()
     {
         Ok(output) => {
-            println!("Program was passed {} (including program name)", cmnd_arr.len());
+            print!("{}", String::from_utf8_lossy(&output.stdout));
             if !output.stderr.is_empty() {
                 eprint!("{}", String::from_utf8_lossy(&output.stderr));
-                return true;
-            } else {
-                return false;
             }
+            println!("Program was passed {} args (including program name).", cmnd_arr.len());
+            return true;
         }
-        Err(e) => {eprintln!("Error executing {}: {}", program_name, e);
-    return false;},
+        Err(e) => {
+            eprintln!("Error executing {}: {}", program_name, e);
+            return false;
+        }
     }
 }

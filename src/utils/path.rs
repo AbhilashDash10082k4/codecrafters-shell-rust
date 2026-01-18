@@ -24,7 +24,6 @@ pub fn find_executable(cmd: &str) -> Option<PathBuf> {
             use std::os::unix::fs::PermissionsExt;
             if let Ok(metadata) = full_path.metadata() {
                 if metadata.permissions().mode() & 0o111 != 0 {
-                    println!("{cmnd} is {}", full_path.display());
                     return Some(full_path);
                 }
             }
