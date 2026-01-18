@@ -1,6 +1,6 @@
-use crate::commands::command::Command;
+use crate::commands::command::UserInput;
 use crate::utils::path::find_executable;
-pub fn handle(cmd: &Command) -> bool {
+pub fn handle(cmd: &UserInput) -> bool {
     let cmd = cmd.raw.trim();
     let command_to_be_printed = match cmd.trim().strip_prefix("type ") {
         Some(c) => c.trim(),

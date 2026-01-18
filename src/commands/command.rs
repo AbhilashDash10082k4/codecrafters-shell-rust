@@ -1,8 +1,8 @@
 
-pub struct Command {
+pub struct UserInput {
     pub raw: String,
 }
-impl Command {
+impl UserInput {
     pub fn new () -> Self {
         Self {raw: String::new()}
     }

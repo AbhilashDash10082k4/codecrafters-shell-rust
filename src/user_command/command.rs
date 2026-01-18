@@ -13,8 +13,6 @@ impl Command {
     println!("{command_to_be_printed}: not found");
 }
 
-}
-
 /*file creation-
 let file_read: Result<T, io::Error> = File::open("a.txt");
 let file_read_res = match file_read {

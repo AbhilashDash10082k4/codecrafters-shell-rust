@@ -1,5 +1,5 @@
-use crate::commands::command::Command;
-pub fn handle(cmd: &Command) -> bool {
+use crate::commands::command::UserInput;
+pub fn handle(cmd: &UserInput) -> bool {
     if cmd.raw.trim() == "exit" {
         return true;
     } else {

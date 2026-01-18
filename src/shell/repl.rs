@@ -1,5 +1,6 @@
 use crate::builtins::{echo, exit, type_cmd};
-use crate::commands::command::Command;
+use crate::commands::command::UserInput;
+use crate::utils::execute_file;
 use std::io::{self, Write};
 pub fn start() {
     loop {
@@ -11,9 +12,9 @@ pub fn start() {
         -unwrap is used to handle exceptional cases
         -this line immediately shows the i/p given on terminal
         -mutex lock- locks the resources/threads until the work is done on and then unlocks it, here the resource is the terminal
-        */
+        -this line flushes the line print!("$ ") and then accepts the user i/p */
         io::stdout().flush().unwrap();
-        let mut cmnd = Command::new();
+        let mut cmnd = UserInput::new();
 
         /*taking the user i/p
         -io::stdin() -user i/p pipeline -taking i/p from keyboard
@@ -21,7 +22,7 @@ pub fn start() {
         */
         io::stdin().read_line(&mut cmnd.raw).unwrap();
 
-        //parsing the command
+        //parsing the UserInput
         if exit::handle(&cmnd) {
             break;
         }
@@ -33,6 +34,11 @@ pub fn start() {
         if type_cmd::handle(&cmnd) {
             continue;
         }
+        //stage10- run an executable
+        if execute_file::handle(&cmnd) {
+            continue;
+        }
+        
         println!("{}: command not found", cmnd.raw.trim());
     }
 }
