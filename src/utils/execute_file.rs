@@ -12,7 +12,7 @@ pub fn handle(user_input: &UserInput) -> bool {
     let program_name = cmnd_arr[0];
     let user_args = &cmnd_arr[1..];
     
-    let executable_file_path = match find_executable(program_name) {
+    let _executable_file_path = match find_executable(program_name) {
         Some(p) => p,
         None => {
             eprintln!("{}: command not found", program_name);
@@ -20,8 +20,7 @@ pub fn handle(user_input: &UserInput) -> bool {
         }
     };
 
-    match Command::new(&executable_file_path)
-        .arg(program_name)
+    match Command::new(program_name)
         .args(user_args)
         .output()
     {
