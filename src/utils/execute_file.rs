@@ -25,7 +25,7 @@ pub fn handle(user_input: &UserInput) -> bool {
         .output()
     {
         Ok(output) => {
-            // println!("{}", program_name);
+            print!("{}", String::from_utf8_lossy(&output.stdout));
             if !output.stderr.is_empty() {
                 eprint!("{}", String::from_utf8_lossy(&output.stderr));
             }
