@@ -25,7 +25,7 @@ pub fn handle(user_input: &UserInput) -> bool {
         .output()
     {
         Ok(output) => {
-            print!("{}", String::from_utf8_lossy(&output.stdout));
+            println!("Program was passed {} (including program name)", cmnd_arr.len());
             if !output.stderr.is_empty() {
                 eprint!("{}", String::from_utf8_lossy(&output.stderr));
                 return true;
