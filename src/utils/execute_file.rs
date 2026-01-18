@@ -29,7 +29,7 @@ pub fn handle(user_input: &UserInput) -> bool {
             if !output.stderr.is_empty() {
                 eprint!("{}", String::from_utf8_lossy(&output.stderr));
             }
-            println!("Program was passed {} args (including program name).", cmnd_arr.len());
+            // println!("Program was passed {} args (including program name).", cmnd_arr.len());
             return true;
         }
         Err(e) => {
