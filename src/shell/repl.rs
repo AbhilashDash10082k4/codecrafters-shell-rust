@@ -39,6 +39,6 @@ pub fn start() {
             continue;
         }
         
-        println!("{}: command not found", cmnd.raw.trim());
+        // println!("{}: command not found", cmnd.raw.trim());
     }
 }
