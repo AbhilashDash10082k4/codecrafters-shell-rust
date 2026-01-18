@@ -20,7 +20,7 @@ pub fn handle(user_input: &UserInput) -> bool {
         }
     };
 
-    match Command::new(&executable_file_path)
+    match Command::new(program_name)
         .args(user_args)
         .output()
     {
