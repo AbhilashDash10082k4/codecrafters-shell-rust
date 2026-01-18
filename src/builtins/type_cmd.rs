@@ -20,5 +20,5 @@ pub fn handle(cmd: &UserInput) -> bool {
     } else {
         println!("{command_to_be_printed}: not found");
     }
-    false
+    true
 }
