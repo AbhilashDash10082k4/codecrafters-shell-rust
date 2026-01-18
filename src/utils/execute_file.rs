@@ -26,7 +26,6 @@ pub fn handle(user_input: &UserInput) -> bool {
     };
 
     let mut child =match Command::new(&executable_path)
-        .arg(program_name)
         .args(user_args)
         .stdin(Stdio::inherit())
         .stdout(Stdio::inherit())
