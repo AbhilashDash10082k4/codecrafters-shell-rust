@@ -1,4 +1,4 @@
-use std::{process::Command};
+use std::{io::Write, process::Command};
 
 use crate::{commands::command::UserInput, utils::path::find_executable};
 
@@ -25,9 +25,9 @@ pub fn handle(user_input: &UserInput) -> bool {
         .output()
     {
         Ok(output) => {
-            print!("{}", String::from_utf8_lossy(&output.stdout));
+            std::io::stdout().write_all(&output.stdout).unwrap();
             if !output.stderr.is_empty() {
-                eprint!("{}", String::from_utf8_lossy(&output.stderr));
+                std::io::stderr().write_all(&output.stderr).unwrap();
             }
             return true;
         }
