@@ -1,4 +1,4 @@
-use crate::builtins::{echo, exit, pwd, type_cmd};
+use crate::builtins::{cd, echo, exit, pwd, type_cmd};
 use crate::commands::command::UserInput;
 use crate::utils::execute_file;
 use std::io::{self, Write};
@@ -42,7 +42,10 @@ pub fn start() {
         if pwd::handle(&cmnd) {
             continue;
         }
-        
+        //stage 12
+        if cd::handle(&cmnd) {
+            continue;
+        }
         println!("{}: command not found", cmnd.raw.trim());
     }
 }
