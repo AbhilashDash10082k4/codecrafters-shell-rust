@@ -1,6 +1,6 @@
 use crate::commands::command::UserInput;
-use std::{env, path::Path};
 use std::fs::canonicalize;
+use std::{env, path::Path};
 /*boolean contract-
 command recognised and operation succeeded-true
 command recognised and operation failed -true
@@ -16,15 +16,22 @@ pub fn handle(cmnd: &UserInput) -> bool {
     if user_ip.is_empty() || !matches!(cd, "cd") {
         return false;
     }
+    let ip_path = user_ip[1];
+    
+    /*stage 15- ~ command */
+    if matches!(ip_path, "~") {
+        let Some(user_home_dir) = env::home_dir() else {
+            println!("cd: {}: No such file or directory", ip_path);
+            return true;
+        };
+        env::set_current_dir(user_home_dir);
+    }
 
     /* Parsing i/p string into a Path -handled cases , so return true*/
-    let gen_path = match canonicalize(Path::new(user_ip[1])) {
-        Ok(p) =>p,
+    let gen_path = match canonicalize(Path::new(ip_path)) {
+        Ok(p) => p,
         _ => {
-            println!(
-            "cd: {}: No such file or directory",
-            user_ip[1]
-        );
+            println!("cd: {}: No such file or directory", ip_path);
             return true;
         }
     };
@@ -41,11 +48,7 @@ pub fn handle(cmnd: &UserInput) -> bool {
     if let Ok(_new_curr_pathl) = env::set_current_dir(&gen_path) {
         return true;
     } else {
-        println!(
-            "cd: {}: No such file or directory",
-            gen_path.display()
-        );
+        println!("cd: {}: No such file or directory", gen_path.display());
         return true;
     }
-    
 }
