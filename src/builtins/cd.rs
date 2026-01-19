@@ -1,5 +1,5 @@
 use crate::commands::command::UserInput;
-use std::{env, path::Path, process::Command};
+use std::{path::Path, process::Command};
 
 /*change the curr_dir given by pwd
 -handle absolute paths*/
@@ -28,6 +28,7 @@ pub fn handle(cmnd: &UserInput) -> bool {
             return true;
         }
         _ => {
+            println!("cd: {}: No such file or directory", path_to_change.display());
             return false;
         }
     }
