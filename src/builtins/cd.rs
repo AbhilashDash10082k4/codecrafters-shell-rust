@@ -1,5 +1,5 @@
 use crate::commands::command::UserInput;
-use std::{path::Path, process::Command};
+use std::{env, path::Path};
 
 /*change the curr_dir given by pwd
 -handle absolute paths*/
@@ -20,16 +20,19 @@ pub fn handle(cmnd: &UserInput) -> bool {
     }
 
     /*validity is checked, now set the value of path_to_change to current_dir*/
-    let child = Command::new(cd).current_dir(path_to_change).spawn();
-
-    match child {
-        Ok(mut c) => {
-            let _ = c.wait();
-            return true;
-        }
-        _ => {
-            println!("cd: {}: No such file or directory", path_to_change.display());
-            return false;
-        }
+    /*earlier -
+    let child = Command::new(cd).current_dir(path_to_change).spawn(); -this is wrong for following reasons -
+    - this spawns a child process which terminates after changing the directory of the process but the parent dir of the shell remains same
+    -child processes never affect the parent process
+    */
+    if let Ok(_new_curr_pathl) = env::set_current_dir(path_to_change) {
+        return true;
+    } else {
+        println!(
+            "cd: {}: No such file or directory",
+            path_to_change.display()
+        );
+        return true;
     }
+    
 }
