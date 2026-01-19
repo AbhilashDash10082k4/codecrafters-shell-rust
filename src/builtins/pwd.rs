@@ -1,5 +1,5 @@
 use crate::commands::command::UserInput;
-use std::{env, error::Error, path::PathBuf};
+use std::{env};
 /*print the current directory
 type the pwd cmnd in shell -give it to OS -print the current dir
 */
@@ -12,9 +12,9 @@ pub fn handle(cmnd: &UserInput) -> bool{
             return false;
         };
         println!("{}", curr_dir.display());
-        return true;
-    } else {
         return false;
+    } else {
+        return true;
     }
     
 }
