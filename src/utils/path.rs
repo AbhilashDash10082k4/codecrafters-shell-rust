@@ -3,8 +3,12 @@ use std::{env, path::{Path, PathBuf}};
 pub fn find_executable(cmd: &str) -> Option<PathBuf> {
     //Read PATH
     let cmnd = cmd.trim();
+
+    /*? -same as match statement. Calls from fn from From trait which converts the possible Error into the form of error returned by the fn*/
     let path_var = env::var("PATH").ok()?;
-     //Search PATH
+    
+    /*Search PATH
+    could have implemented using PathBuf::components*/
     for dir in path_var.split(':') {
         /*std::path- provides Path and PathBuf wrappers around OsStr and OsString (strings provided directly by the system, their encoding is unknown)
         std::path::Path - let to work with the files in both Unix and Windows
@@ -28,7 +32,7 @@ pub fn find_executable(cmd: &str) -> Option<PathBuf> {
                 }
             }
         }
-
+        /*cfg -conditional compilation*/
         #[cfg(windows)]
         {
             /* str::matches -returns an iterator over disjoint parts that matche over patterns
