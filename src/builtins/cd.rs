@@ -13,7 +13,7 @@ pub fn handle(cmnd: &UserInput) -> bool {
 
     /*builtin cd*/
     let cd = user_ip[0];
-    if !matches!(cd, "cd") {
+    if user_ip.is_empty() || !matches!(cd, "cd") {
         return false;
     }
 
@@ -21,6 +21,10 @@ pub fn handle(cmnd: &UserInput) -> bool {
     let gen_path = match canonicalize(Path::new(user_ip[1])) {
         Ok(p) =>p,
         _ => {
+            println!(
+            "cd: {}: No such file or directory",
+            user_ip[1]
+        );
             return true;
         }
     };
