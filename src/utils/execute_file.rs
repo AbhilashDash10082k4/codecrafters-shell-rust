@@ -19,7 +19,7 @@ pub fn handle(user_input: &UserInput) -> bool {
     match find_executable(program_name) {
         Some(p) => p,
         None => {
-            eprintln!("{}: command not found", program_name);
+            
             return false;
         }
     };
