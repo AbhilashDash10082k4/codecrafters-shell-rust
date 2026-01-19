@@ -7,7 +7,7 @@ pub fn handle(cmd: &UserInput) -> bool {
         None => return false,
     };
 
-    let builtins = ["echo", "exit", "type"];
+    let builtins = ["echo", "exit", "type", "pwd"];
 
     // Builtin check
     if builtins.contains(&command_to_be_printed) {
