@@ -17,14 +17,20 @@ pub fn handle(cmnd: &UserInput) -> bool {
         return false;
     }
     let ip_path = user_ip[1];
-    
+
     /*stage 15- ~ command */
     if matches!(ip_path, "~") {
-        let Some(user_home_dir) = env::home_dir() else {
-            println!("cd: {}: No such file or directory", ip_path);
-            return true;
-        };
-        env::set_current_dir(user_home_dir);
+        let user_home_dir = env::home_dir();
+        match user_home_dir {
+            Some(p) => {
+                env::set_current_dir(p);
+                return true;
+            }
+            _ => {
+                println!("cd: {}: No such file or directory", ip_path);
+                return true;
+            }
+        }
     }
 
     /* Parsing i/p string into a Path -handled cases , so return true*/
