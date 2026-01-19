@@ -1,5 +1,5 @@
 use crate::commands::command::UserInput;
-use std::{env};
+use std::{env, error::Error, path::PathBuf};
 /*print the current directory
 type the pwd cmnd in shell -give it to OS -print the current dir
 */
@@ -8,15 +8,13 @@ pub fn handle(cmnd: &UserInput) -> bool{
     let user_ip = cmnd.raw.trim();
     //match command with pwd and then send this to OS to fetch the curr dir
     if user_ip == "pwd" {
-        match env::current_dir() {
-            Ok(f) => println!("{}", f.display()),
-            _ =>  {
-                return false;
-            }
+        let Ok(curr_dir) = env::current_dir() else {
+            return false;
         };
+        println!("{}", curr_dir.display());
         return true;
     } else {
-        false
+        return true;
     }
     
 }
