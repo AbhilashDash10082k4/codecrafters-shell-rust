@@ -18,7 +18,7 @@ pub fn handle(cmnd: &UserInput) -> bool {
     let gen_path = match canonicalize(Path::new(user_ip[1])) {
         Ok(p) =>p,
         _ => {
-            return true;
+            return false;
         }
     };
     // if !path_to_change.starts_with("/") {
