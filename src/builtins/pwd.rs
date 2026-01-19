@@ -14,7 +14,7 @@ pub fn handle(cmnd: &UserInput) -> bool{
         println!("{}", curr_dir.display());
         return true;
     } else {
-        return true;
+        return false;
     }
     
 }
