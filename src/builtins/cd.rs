@@ -1,7 +1,10 @@
 use crate::commands::command::UserInput;
 use std::{env, path::Path};
 use std::fs::canonicalize;
-
+/*boolean contract-
+command recognised and operation succeeded-true
+command recognised and operation failed -true
+command is not recognised -false*/
 /*change the curr_dir given by pwd
 -handle absolute paths*/
 pub fn handle(cmnd: &UserInput) -> bool {
@@ -14,16 +17,16 @@ pub fn handle(cmnd: &UserInput) -> bool {
         return false;
     }
 
-    /* Parsing i/p string into a Path */
+    /* Parsing i/p string into a Path -handled cases , so return true*/
     let gen_path = match canonicalize(Path::new(user_ip[1])) {
         Ok(p) =>p,
         _ => {
-            return false;
+            return true;
         }
     };
-    // if !path_to_change.starts_with("/") {
+    /* if !path_to_change.starts_with("/") {
     //     return false;
-    // }
+    // }*/
 
     /*validity is checked, now set the value of path_to_change to current_dir*/
     /*earlier -
