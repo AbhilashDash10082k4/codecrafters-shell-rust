@@ -1,5 +1,6 @@
 use crate::commands::command::UserInput;
 use std::{env, path::Path};
+use std::fs::canonicalize;
 
 /*change the curr_dir given by pwd
 -handle absolute paths*/
@@ -14,10 +15,15 @@ pub fn handle(cmnd: &UserInput) -> bool {
     }
 
     /* Parsing i/p string into a Path */
-    let path_to_change = Path::new(user_ip[1]);
-    if !path_to_change.starts_with("/") {
-        return false;
-    }
+    let gen_path = match canonicalize(Path::new(user_ip[1])) {
+        Ok(p) =>p,
+        _ => {
+            return true;
+        }
+    };
+    // if !path_to_change.starts_with("/") {
+    //     return false;
+    // }
 
     /*validity is checked, now set the value of path_to_change to current_dir*/
     /*earlier -
@@ -25,12 +31,12 @@ pub fn handle(cmnd: &UserInput) -> bool {
     - this spawns a child process which terminates after changing the directory of the process but the parent dir of the shell remains same
     -child processes never affect the parent process
     */
-    if let Ok(_new_curr_pathl) = env::set_current_dir(path_to_change) {
+    if let Ok(_new_curr_pathl) = env::set_current_dir(&gen_path) {
         return true;
     } else {
         println!(
             "cd: {}: No such file or directory",
-            path_to_change.display()
+            gen_path.display()
         );
         return true;
     }
