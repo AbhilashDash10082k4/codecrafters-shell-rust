@@ -28,7 +28,7 @@ pub fn handle(cmd: &UserInput) ->bool {
     
     let args = cmnd_parser::handle(cmd);
     if args[0] == "echo" {
-        println!("{:?}",&args[1..]);
+        println!("{:#?}",&args[1..]);
     }
     true
 }
