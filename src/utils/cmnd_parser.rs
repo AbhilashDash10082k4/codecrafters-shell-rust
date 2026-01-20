@@ -23,6 +23,7 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
     
     /*a flag*/
     let mut in_quotes = false;
+    let mut in_double_quotes = false;
     
     /*complete set of args*/
     let mut args: Vec<String> = Vec::new();
@@ -35,12 +36,17 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
         Case1 - c = '\'' -controls the quote mode and is not added in o/p
         Case2 - c = ' ' and not in quotes -ends arg if is_quotes = false
         Case3 - c = any other char - append it to curr_arg*/
-        if c == '\'' || c == double_quotes{
+        if c == double_quotes {
+            in_double_quotes = !in_double_quotes;
+        }
+        if c == '\''{
             /*toggling the quote mode -no storing of ' in o/p*/
             in_quotes = !in_quotes;
         }
-        /*handling of special ' ' that are inside the '' */ 
-        else if c == ' ' && in_quotes == false {
+        /*handling of special ' ' that are inside the '' 
+        c = ' ' and not in quotes
+        c = '\'' and in double quotes*/ 
+        else if (c == ' ' && in_quotes == false) || (c == '\'' && in_double_quotes) {
             /*split the main cmnd and args*/
             if !(&curr_arg.is_empty()) {
                 /*this line -args.push(curr_arg) takes the ownership of curr_arg and the condition in if becomes invalid.*/
