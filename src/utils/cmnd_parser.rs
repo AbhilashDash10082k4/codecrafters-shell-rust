@@ -27,12 +27,15 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
     /*complete set of args*/
     let mut args: Vec<String> = Vec::new();
     
+    /*stage 18- double quotes*/
+    let double_quotes= '\"';
+
     for c in curr_arg_buffer {
         /*3 diff behaviours
         Case1 - c = '\'' -controls the quote mode and is not added in o/p
         Case2 - c = ' ' and not in quotes -ends arg if is_quotes = false
         Case3 - c = any other char - append it to curr_arg*/
-        if c == '\'' {
+        if c == '\'' || c == double_quotes{
             /*toggling the quote mode -no storing of ' in o/p*/
             in_quotes = !in_quotes;
         }
