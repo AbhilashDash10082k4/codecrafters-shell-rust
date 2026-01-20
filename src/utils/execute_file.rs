@@ -10,13 +10,13 @@ pub fn handle(user_input: &UserInput) -> bool {
     /*M2
     split_whitespace used instead of split(' ') to handle multiple whitespaces
     */
-    let cmnd_arr: Vec<&str> = user_input.raw.split_whitespace().collect();
+    let cmnd_arr = user_input.args();
     if cmnd_arr.is_empty() {
         return false;
     }
-    let program_name = cmnd_arr[0];
+    let program_name = &cmnd_arr[0];
     let user_args = &cmnd_arr[1..];
-    match find_executable(program_name) {
+    match find_executable(&program_name) {
         Some(p) => p,
         None => {
             

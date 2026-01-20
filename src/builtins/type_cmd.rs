@@ -19,7 +19,7 @@ pub fn handle(cmd: &UserInput) -> bool {
     
     let else - only handles the else part. If the let condition becomes true, it assigns val to the var defined in the let arm and then other code in the fn are executed. Immediately returns from the fn after failure
     */
-    if let Some(file) = find_executable(command_to_be_printed) {
+    if let Some(file) = find_executable(&command_to_be_printed.to_string()) {
         println!("{command_to_be_printed} is {}", file.display());
     } else {
         println!("{command_to_be_printed}: not found");

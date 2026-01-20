@@ -1,4 +1,4 @@
-use crate::{commands::command::UserInput, utils::cmnd_parser};
+use crate::{commands::command::UserInput};
 pub fn handle(cmd: &UserInput) ->bool {
     /*as_bytes- byte slice (vector of bytes) of a string
     -from_utf8- converts byte arr into string
@@ -26,7 +26,7 @@ pub fn handle(cmd: &UserInput) ->bool {
     }*/
     
     
-    let args = cmnd_parser::handle(cmd);
+    let args = cmd.args();
     if args.is_empty() {
         return false;
     }
