@@ -1,10 +1,10 @@
-use crate::commands::command::UserInput;
+use crate::{commands::command::UserInput, utils::cmnd_parser};
 pub fn handle(cmd: &UserInput) ->bool {
     /*as_bytes- byte slice (vector of bytes) of a string
     -from_utf8- converts byte arr into string
     -into_bytes-same as as_bytes -consumes the string
     -iter -iterates over &T
-    -into_iter -iterates over &mut T
+    -into_mut_iter -iterates over &mut T
     -into_iter -iterates over T
     */
     /*V1-
@@ -25,11 +25,10 @@ pub fn handle(cmd: &UserInput) ->bool {
         None => (ip_str.trim(), ""),
     }*/
     
-    //V2
-    let (echo_cmd, arg) = cmd.name_and_args();
-    if echo_cmd == "echo" {
-        println!("{}",arg);
-        return true;
+    
+    let args = cmnd_parser::handle(cmd);
+    if args[0] == "echo" {
+        println!("{:?}",&args[1..]);
     }
-    false
+    true
 }
