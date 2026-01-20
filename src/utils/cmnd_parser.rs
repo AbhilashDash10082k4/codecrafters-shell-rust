@@ -18,7 +18,7 @@ curr_arg_buffer, args, in_quotes
 -react to white spaces, build args, store chars
 */
 pub fn handle(cmnd: &UserInput) -> Vec<String> {
-    let curr_arg_buffer = cmnd.raw.as_str().trim_end().chars();
+    let curr_arg_buffer = cmnd.raw.trim_end().chars();
     let mut curr_arg = String::new();
     
     /*a flag*/
