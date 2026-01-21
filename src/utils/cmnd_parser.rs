@@ -29,7 +29,7 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
     let mut args: Vec<String> = Vec::new();
     
     /*stage 18- double quotes*/
-    let double_quotes= '\"';
+    let double_quotes= '"';
 
     for c in curr_arg_buffer {
         /*3 diff behaviours
@@ -46,7 +46,7 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
             in_double_quotes = !in_double_quotes;
         }
         /*handling of special ' ' that are inside the '' 
-        c = ' ' and not in quotes or double_quotes (outside quotes)
+        c = ' ' and not in quotes or double_quotes (outside quotes) -only 1 state can be active a t a time
         c = '\'' and in double quotes*/ 
         else if c == ' ' && (!in_quotes && !in_double_quotes) {
             /*split the main cmnd and args*/
