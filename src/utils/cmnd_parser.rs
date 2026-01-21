@@ -20,34 +20,34 @@ curr_arg_buffer, args, in_quotes
 pub fn handle(cmnd: &UserInput) -> Vec<String> {
     let curr_arg_buffer = cmnd.raw.trim().chars();
     let mut curr_arg = String::new();
-    
+
     /*a flag*/
     let mut in_quotes = false;
     let mut in_double_quotes = false;
-    
+
     /*complete set of args*/
     let mut args: Vec<String> = Vec::new();
-    
+
     /*stage 18- double quotes*/
-    let double_quotes= '"';
+    let double_quotes = '"';
 
     for c in curr_arg_buffer {
         /*3 diff behaviours
         Case1 - c = '\'' -controls the quote mode and is not added in o/p
         Case2 - c = ' ' and not in quotes -ends arg if is_quotes = false
         Case3 - c = any other char - append it to curr_arg*/
-        if c == '\'' && !in_double_quotes{
+        if c == '\'' && !in_double_quotes {
             /*toggling the quote mode -no storing of ' in o/p
             -toggles only if not in "" */
             in_quotes = !in_quotes;
         }
-        if c == double_quotes && !in_quotes{
+        if c == double_quotes && !in_quotes {
             /*toggles only if not in ''*/
             in_double_quotes = !in_double_quotes;
         }
-        /*handling of special ' ' that are inside the '' 
+        /*handling of special ' ' that are inside the ''
         c = ' ' and not in quotes or double_quotes (outside quotes) -only 1 state can be active a t a time
-        c = '\'' and in double quotes*/ 
+        c = '\'' and in double quotes*/
         else if c == ' ' && (!in_quotes && !in_double_quotes) {
             /*split the main cmnd and args*/
             if !(&curr_arg.is_empty()) {
@@ -59,7 +59,9 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
             }
         } else {
             /*every other char -for double quotes, if ' is in "", then consider it as a char */
-            curr_arg.push(c);
+            if !(c == '\'' && c == double_quotes) {
+                curr_arg.push(c);
+            }
         }
     }
     if !curr_arg.is_empty() {
