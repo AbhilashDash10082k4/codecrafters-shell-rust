@@ -59,7 +59,7 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
             }
         } else {
             /*every other char -for double quotes, if ' is in "", then consider it as a char */
-            if !(c == '\'' && c == double_quotes) {
+            if !(c == '\'' || c == double_quotes) {
                 curr_arg.push(c);
             }
         }
