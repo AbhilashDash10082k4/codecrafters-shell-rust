@@ -40,10 +40,13 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
             /*toggling the quote mode -no storing of ' in o/p
             -toggles only if not in "" */
             in_quotes = !in_quotes;
+            continue;
         }
         if c == double_quotes && !in_quotes {
             /*toggles only if not in ''*/
             in_double_quotes = !in_double_quotes;
+            continue;
+
         }
         /*handling of special ' ' that are inside the ''
         c = ' ' and not in quotes or double_quotes (outside quotes) -only 1 state can be active a t a time
@@ -57,11 +60,13 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
                 /*to prevent this condition, a new val is assigned to curr_arg -this is emptying buffer*/
                 curr_arg = String::new();
             }
+            continue;
+
         } else {
-            /*every other char -for double quotes, if ' is in "", then consider it as a char */
-            if !((c == '\''&& in_double_quotes) || c == double_quotes) {
+            /*every other char -for double quotes, if ' is in "", then consider it as a char
+            -rules for pushing literal chars -
+            skip ' if it toggles in_quotes adn same for " */
                 curr_arg.push(c);
-            }
         }
     }
     if !curr_arg.is_empty() {
