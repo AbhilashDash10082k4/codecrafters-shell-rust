@@ -47,8 +47,9 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
         }
         if !is_slash {
             curr_arg.push(c);
+            is_slash = !is_slash;
         }
-        
+
         if c == '\'' && !in_double_quotes {
             /*toggling the quote mode -no storing of ' in o/p
             -toggles only if not in "" */
