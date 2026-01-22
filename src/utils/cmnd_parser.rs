@@ -32,7 +32,7 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
     let double_quotes = '"';
 
     /*stage19 - escaped*/
-    let mut escaped = false;
+    let mut escaped = true;
     let slash = '\\';
 
     for c in curr_arg_buffer {
@@ -41,13 +41,15 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
         Case2 - c = ' ' and not in quotes -ends arg if is_quotes = false
         Case3 - c = any other char - append it to curr_arg*/
         /*stage 19 -backslash handling -'\' is not a state trigger, it is  one-shot and is not persistent
-        if escaped = true-push the nxt char as it is, if false, then proceed normally*/
-        if c == slash && (!in_double_quotes && !in_quotes) {
-            escaped = !escaped;
+        if escaped = true-push the nxt char as it is, if false, then proceed normally
+        correct order - back_slash-> single_quotes, double_quotes-> space splitting*/
+        if escaped {
+            curr_arg.push(c);
+            escaped = false;
             continue;
         }
-        if !escaped {
-            curr_arg.push(c);
+        if c == slash && !in_quotes {
+            escaped = true;
             continue;
         }
         if c == '\'' && !in_double_quotes {
@@ -63,6 +65,7 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
             in_double_quotes = !in_double_quotes;
             continue;
         }
+        
         /*handling of special ' ' that are inside the ''
         c = ' ' and not in quotes or double_quotes (outside quotes) -only 1 state can be active a t a time
         c = '\'' and in double quotes*/
