@@ -66,7 +66,7 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
         /*handling of special ' ' that are inside the ''
         c = ' ' and not in quotes or double_quotes (outside quotes) -only 1 state can be active a t a time
         c = '\'' and in double quotes*/
-        else if c == ' ' && (!in_quotes && !in_double_quotes && !is_slash) {
+        else if c == ' ' && (!in_quotes && !in_double_quotes) {
             /*split the main cmnd and args*/
             if !(&curr_arg.is_empty()) {
                 /*this line -args.push(curr_arg) takes the ownership of curr_arg and the condition in if becomes invalid.*/
