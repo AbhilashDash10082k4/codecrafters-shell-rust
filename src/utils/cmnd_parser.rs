@@ -31,8 +31,8 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
     /*stage 18- double quotes*/
     let double_quotes = '"';
 
-    /*stage19 - is_slash*/
-    let mut is_slash = false;
+    /*stage19 - escaped*/
+    let mut escaped = false;
     let slash = '\\';
 
     for c in curr_arg_buffer {
@@ -40,16 +40,16 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
         Case1 - c = '\'' -controls the quote mode and is not added in o/p
         Case2 - c = ' ' and not in quotes -ends arg if is_quotes = false
         Case3 - c = any other char - append it to curr_arg*/
-        /*stage 19 -backslash handling*/
+        /*stage 19 -backslash handling -'\' is not a state trigger, it is  one-shot and is not persistent
+        if escaped = true-push the nxt char as it is, if false, then proceed normally*/
         if c == slash && (!in_double_quotes && !in_quotes) {
-            is_slash = !is_slash;
+            escaped = !escaped;
             continue;
         }
-        if !is_slash {
+        if !escaped {
             curr_arg.push(c);
-            is_slash = !is_slash;
+            continue;
         }
-
         if c == '\'' && !in_double_quotes {
             /*toggling the quote mode -no storing of ' in o/p
             -toggles only if not in "" */
