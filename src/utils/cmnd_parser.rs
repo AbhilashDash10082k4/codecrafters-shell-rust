@@ -31,27 +31,41 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
     /*stage 18- double quotes*/
     let double_quotes = '"';
 
+    /*stage19 - is_slash*/
+    let mut is_slash = false;
+    let slash = '\\';
+
     for c in curr_arg_buffer {
         /*3 diff behaviours
         Case1 - c = '\'' -controls the quote mode and is not added in o/p
         Case2 - c = ' ' and not in quotes -ends arg if is_quotes = false
         Case3 - c = any other char - append it to curr_arg*/
+        /*stage 19 -backslash handling*/
+        if c == slash && (!in_double_quotes && !in_quotes) {
+            is_slash = !is_slash;
+            continue;
+        }
+        if !is_slash {
+            curr_arg.push(c);
+        }
+        
         if c == '\'' && !in_double_quotes {
             /*toggling the quote mode -no storing of ' in o/p
             -toggles only if not in "" */
             in_quotes = !in_quotes;
+            /*adding continue helps as it skips the toggling char as soon as it is matched
+            control chars must short circuit processing (skip the entire loop on matching)*/
             continue;
         }
         if c == double_quotes && !in_quotes {
             /*toggles only if not in ''*/
             in_double_quotes = !in_double_quotes;
             continue;
-
         }
         /*handling of special ' ' that are inside the ''
         c = ' ' and not in quotes or double_quotes (outside quotes) -only 1 state can be active a t a time
         c = '\'' and in double quotes*/
-        else if c == ' ' && (!in_quotes && !in_double_quotes) {
+        else if c == ' ' && (!in_quotes && !in_double_quotes && !is_slash) {
             /*split the main cmnd and args*/
             if !(&curr_arg.is_empty()) {
                 /*this line -args.push(curr_arg) takes the ownership of curr_arg and the condition in if becomes invalid.*/
@@ -61,12 +75,12 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
                 curr_arg = String::new();
             }
             continue;
-
         } else {
             /*every other char -for double quotes, if ' is in "", then consider it as a char
             -rules for pushing literal chars -
-            skip ' if it toggles in_quotes adn same for " */
-                curr_arg.push(c);
+            skip ' if it toggles in_quotes and same for "
+            before skipping the loop by using continue, the quotes used to leak into this loop and were added to args */
+            curr_arg.push(c);
         }
     }
     if !curr_arg.is_empty() {
