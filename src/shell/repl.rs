@@ -35,7 +35,12 @@ pub fn start() {
             continue;
         }
         //stage10- run an executable
-        if execute_file::handle(&cmnd) {
+        /*parsing into Vec<String> */
+        let args = cmnd_parser::handle(&cmnd);
+        if args.is_empty() {
+            continue;
+        }
+        if execute_file::handle(&args) {
             continue;
         }
         //stage11 -pwd
@@ -47,7 +52,7 @@ pub fn start() {
             continue;
         }
         /*stage22 anything except builtin -execute it*/
-        execute_file::handle(&cmnd);
-        // println!("{}: command not found", cmnd.raw.trim());
+        // execute_file::handle(&cmnd);
+        println!("{}: command not found", args[0]);
     }
 }
