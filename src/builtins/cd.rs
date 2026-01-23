@@ -1,4 +1,3 @@
-use crate::commands::command::UserInput;
 use std::fs::canonicalize;
 use std::{env, path::Path};
 /*boolean contract-
@@ -7,23 +6,23 @@ command recognised and operation failed -true
 command is not recognised -false*/
 /*change the curr_dir given by pwd
 -handle absolute paths*/
-pub fn handle(cmnd: &UserInput) -> bool {
+pub fn handle(cmnd: &Vec<String>) -> bool {
     /*user_ip = path to redirect to*/
-    let user_ip: Vec<&str> = cmnd.raw.trim().split_whitespace().collect();
+    let user_ip = cmnd;
 
     /*builtin cd*/
-    let cd = user_ip[0];
-    if user_ip.is_empty() || !matches!(cd, "cd") {
+    let cd = &user_ip[0];
+    if user_ip.is_empty() || cd != &String::from("cd") {
         return false;
     }
-    let ip_path = user_ip[1];
+    let ip_path = &user_ip[1];
 
     /*stage 15- ~ command */
-    if matches!(ip_path, "~") {
+    if ip_path != &String::from("~") {
         let user_home_dir = env::home_dir();
         match user_home_dir {
             Some(p) => {
-                env::set_current_dir(p);
+                let _ = env::set_current_dir(p);
                 return true;
             }
             _ => {
@@ -34,7 +33,7 @@ pub fn handle(cmnd: &UserInput) -> bool {
     }
 
     /* Parsing i/p string into a Path -handled cases , so return true*/
-    let gen_path = match canonicalize(Path::new(ip_path)) {
+    let gen_path = match canonicalize(Path::new(&ip_path)) {
         Ok(p) => p,
         _ => {
             println!("cd: {}: No such file or directory", ip_path);

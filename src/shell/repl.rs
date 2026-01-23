@@ -21,38 +21,37 @@ pub fn start() {
         -read_line -reads an entire line until \n is present
         */
         io::stdin().read_line(&mut cmnd.raw).unwrap();
-
-        //parsing the UserInput
-        if exit::handle(&cmnd) {
-            break;
-        }
-
-        if echo::handle(&cmnd) {
-            continue;
-        }
-
-        if type_cmd::handle(&cmnd) {
-            continue;
-        }
-        //stage10- run an executable
-        /*parsing into Vec<String> */
+        /*stage22 -> parsing logic- separation of concern- parsing done only once*/
         let args = cmnd_parser::handle(&cmnd);
         if args.is_empty() {
             continue;
         }
-        if execute_file::handle(&args) {
+        //parsing the UserInput
+        if exit::handle(&args) {
+            break;
+        }
+
+        if echo::handle(&args) {
             continue;
         }
+
+        if type_cmd::handle(&args) {
+            continue;
+        }
+        
         //stage11 -pwd
-        if pwd::handle(&cmnd) {
+        if pwd::handle(&args) {
             continue;
         }
         //stage 12
-        if cd::handle(&cmnd) {
+        if cd::handle(&args) {
             continue;
         }
-        /*stage22 anything except builtin -execute it*/
-        // execute_file::handle(&cmnd);
-        println!("{}: command not found", args[0]);
+        /*stage10- run an executable
+        stage22 -demands that the execution logic should be kept at last to 1st chk all the builtins and then chk the external commands*/
+        if execute_file::handle(&args) {
+            continue;
+        }
+        println!("{}: command not found", cmnd.raw.trim());
     }
 }
