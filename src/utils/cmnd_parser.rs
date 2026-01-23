@@ -1,4 +1,9 @@
-use crate::commands::command::UserInput;
+use std::path::Path;
+
+use crate::{
+    commands::command::UserInput,
+    utils::{childprocess_execution, path::find_executable},
+};
 /*Parsing problems are solved by state machines, not string tricks
 raw str to vec str but by not splitting based on whitespaces
 smart splitting is done considering spaces within quotes chars*/
@@ -40,16 +45,18 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
         Case1 - c = '\'' -controls the quote mode and is not added in o/p
         Case2 - c = ' ' and not in quotes -ends arg if is_quotes = false
         Case3 - c = any other char - append it to curr_arg*/
-        /*stage 19 -backslash handling -'\' is not a state trigger, it is  one-shot and is not persistent
-        if escaped = true-push the nxt char as it is, if false, then proceed normally
-        correct order - back_slash-> single_quotes, double_quotes-> space splitting*/
+        /*stage 19 to 22-backslash handling -'\' is not a state trigger, it is  one-shot and is not persistent
+        -if escaped = true-push the nxt char as it is, if false, then proceed normally
+        -correct order - back_slash-> single_quotes, double_quotes-> space splitting-> literal char
+        -reason for this order -effect of these rules on parsing(scope of influencing)
+        -Rules that change interpretation must run before rules that consume characters -here \ changes interpret. and quotes and spaces consume chars*/
+        if c == slash && !in_quotes {
+            escaped = true;
+            continue;
+        }
         if escaped {
             curr_arg.push(c);
             escaped = false;
-            continue;
-        }
-        if c == slash && !in_quotes {
-            escaped = true;
             continue;
         }
         if c == '\'' && !in_double_quotes {
@@ -65,7 +72,6 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
             in_double_quotes = !in_double_quotes;
             continue;
         }
-        
         /*handling of special ' ' that are inside the ''
         c = ' ' and not in quotes or double_quotes (outside quotes) -only 1 state can be active a t a time
         c = '\'' and in double quotes*/
@@ -75,7 +81,8 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
                 /*this line -args.push(curr_arg) takes the ownership of curr_arg and the condition in if becomes invalid.*/
                 args.push(curr_arg);
 
-                /*to prevent this condition, a new val is assigned to curr_arg -this is emptying buffer*/
+                /*to prevent this condition, a new val is assigned to curr_arg -this is emptying buffer
+                this also leads to end the current arg*/
                 curr_arg = String::new();
             }
             continue;
@@ -89,6 +96,19 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
     }
     if !curr_arg.is_empty() {
         args.push(curr_arg);
+    }
+    //execute the args once finally pushed
+    for arg in &args {
+        if !(&arg.starts_with('\'')) {
+            let _path = find_executable(&arg);
+            match _path {
+                Some(p) => p,
+                _ => {
+                    continue;
+                }
+            };
+            childprocess_execution::handle(&args);
+        }
     }
     args
 }

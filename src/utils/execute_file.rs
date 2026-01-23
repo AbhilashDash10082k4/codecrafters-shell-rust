@@ -1,6 +1,6 @@
 use std::process::{Command, Stdio};
 
-use crate::{commands::command::UserInput, utils::path::find_executable};
+use crate::{commands::command::UserInput, utils::{childprocess_execution, path::find_executable}};
 
 //take arg -find name to attach to PATH env var and then execute the file and exit succesfully
 pub fn handle(user_input: &UserInput) -> bool {
@@ -39,20 +39,21 @@ pub fn handle(user_input: &UserInput) -> bool {
     child.wait -used to hold the shell untill the program stops
     program_name != find_executable(program_name) 
     */
-    let mut child = match Command::new(program_name)
-        .args(user_args)
-        .stdin(Stdio::inherit())
-        .stdout(Stdio::inherit())
-        .stderr(Stdio::inherit())
-        .spawn()
-    {
-        Ok(c) => c,
-        Err(e) => {
-            eprintln!("Error executing {program_name}: {e}");
-            return false;
-        }
-    };
+    // let mut child = match Command::new(program_name)
+    //     .args(user_args)
+    //     .stdin(Stdio::inherit())
+    //     .stdout(Stdio::inherit())
+    //     .stderr(Stdio::inherit())
+    //     .spawn()
+    // {
+    //     Ok(c) => c,
+    //     Err(e) => {
+    //         eprintln!("Error executing {program_name}: {e}");
+    //         return false;
+    //     }
+    // };
+    childprocess_execution::handle(&cmnd_arr);
     // Wait for program to finish before showing prompt again
-    let _ = child.wait();
+    // let _ = child.wait();
     true
 }
