@@ -48,6 +48,6 @@ pub fn start() {
         }
         /*stage22 anything except builtin -execute it*/
         execute_file::handle(&cmnd);
-        println!("{}: command not found", cmnd.raw.trim());
+        // println!("{}: command not found", cmnd.raw.trim());
     }
 }
