@@ -1,6 +1,7 @@
-use std::process::{Command, Stdio};
-
-use crate::{commands::command::UserInput, utils::{childprocess_execution, path::find_executable}};
+use crate::{
+    commands::command::UserInput,
+    utils::{childprocess_execution, path::find_executable},
+};
 
 //take arg -find name to attach to PATH env var and then execute the file and exit succesfully
 pub fn handle(user_input: &UserInput) -> bool {
@@ -15,11 +16,9 @@ pub fn handle(user_input: &UserInput) -> bool {
         return false;
     }
     let program_name = &cmnd_arr[0];
-    let user_args = &cmnd_arr[1..];
     match find_executable(&program_name) {
         Some(p) => p,
         None => {
-            
             return false;
         }
     };
@@ -37,23 +36,21 @@ pub fn handle(user_input: &UserInput) -> bool {
     Command -tool to run other programs, used by Rust to command directly to OS
     .spawn -finally runs the program
     child.wait -used to hold the shell untill the program stops
-    program_name != find_executable(program_name) 
+    program_name != find_executable(program_name)
     */
-    // let mut child = match Command::new(program_name)
-    //     .args(user_args)
-    //     .stdin(Stdio::inherit())
-    //     .stdout(Stdio::inherit())
-    //     .stderr(Stdio::inherit())
-    //     .spawn()
-    // {
-    //     Ok(c) => c,
-    //     Err(e) => {
-    //         eprintln!("Error executing {program_name}: {e}");
-    //         return false;
-    //     }
-    // };
+    /* let mut child = match Command::new(program_name)
+        .args(user_args)
+        .stdin(Stdio::inherit())
+        .stdout(Stdio::inherit())
+        .stderr(Stdio::inherit())
+        .spawn()
+    {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("Error executing {program_name}: {e}");
+            return false;
+        }
+    }; moved into child childprocess_execution::handle(&cmnd_arr);*/
     childprocess_execution::handle(&cmnd_arr);
-    // Wait for program to finish before showing prompt again
-    // let _ = child.wait();
     true
 }

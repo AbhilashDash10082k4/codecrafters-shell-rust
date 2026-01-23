@@ -1,9 +1,4 @@
-use std::path::Path;
-
-use crate::{
-    commands::command::UserInput,
-    utils::{childprocess_execution, path::find_executable},
-};
+use crate::commands::command::UserInput;
 /*Parsing problems are solved by state machines, not string tricks
 raw str to vec str but by not splitting based on whitespaces
 smart splitting is done considering spaces within quotes chars*/
@@ -96,19 +91,6 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
     }
     if !curr_arg.is_empty() {
         args.push(curr_arg);
-    }
-    //execute the args once finally pushed
-    for arg in &args {
-        if !(&arg.starts_with('\'')) {
-            let _path = find_executable(&arg);
-            match _path {
-                Some(p) => p,
-                _ => {
-                    continue;
-                }
-            };
-            childprocess_execution::handle(&args);
-        }
     }
     args
 }

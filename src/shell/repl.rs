@@ -1,6 +1,6 @@
 use crate::builtins::{cd, echo, exit, pwd, type_cmd};
 use crate::commands::command::UserInput;
-use crate::utils::execute_file;
+use crate::utils::{cmnd_parser, execute_file};
 use std::io::{self, Write};
 pub fn start() {
     loop {
@@ -46,6 +46,8 @@ pub fn start() {
         if cd::handle(&cmnd) {
             continue;
         }
+        /*stage22 anything except builtin -execute it*/
+        execute_file::handle(&cmnd);
         println!("{}: command not found", cmnd.raw.trim());
     }
 }
