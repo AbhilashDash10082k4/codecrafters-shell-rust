@@ -17,6 +17,7 @@ if cmd.raw.starts_with("'") && cmd.raw.ends_with("'") {
 curr_arg_buffer, args, in_quotes
 -react to white spaces, build args, store chars
 */
+/*stage22- to change this parser from working for only arguments to working for executables (token #0)*/
 pub fn handle(cmnd: &UserInput) -> Vec<String> {
     let curr_arg_buffer = cmnd.raw.trim().chars();
     let mut curr_arg = String::new();
@@ -29,7 +30,7 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
     let mut args: Vec<String> = Vec::new();
 
     /*stage 18- double quotes*/
-    let double_quotes = '"';
+    let double_quotes = '\"';
 
     /*stage19 - escaped*/
     let mut escaped = true;
@@ -45,7 +46,7 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
         -correct order - back_slash-> single_quotes, double_quotes-> space splitting-> literal char
         -reason for this order -effect of these rules on parsing(scope of influencing)
         -Rules that change interpretation must run before rules that consume characters -here \ changes interpret. and quotes and spaces consume chars*/
-        if c == slash && !in_quotes {
+        if c == slash && !in_quotes && !in_double_quotes{
             escaped = true;
             continue;
         }
