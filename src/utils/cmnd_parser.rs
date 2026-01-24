@@ -46,12 +46,31 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
         -correct order - back_slash-> single_quotes, double_quotes-> space splitting-> literal char
         -reason for this order -effect of these rules on parsing(scope of influencing)
         -Rules that change interpretation must run before rules that consume characters -here \ changes interpret. and quotes and spaces consume chars*/
-        if c == slash && !in_quotes && !in_double_quotes {
-            escaped = true;
-            continue;
+        if c == slash {
+            if !in_quotes && !in_double_quotes {
+                escaped = true;
+                continue;
+            }
+
+            if in_double_quotes {
+                escaped = true;
+                continue;
+            }
         }
         if escaped {
-            curr_arg.push(c);
+            if in_double_quotes {
+                // allow escaping only certain chars
+                if c == '\\' || c == '"' || c == '$' || c == '`' {
+                    curr_arg.push(c);
+                } else {
+                    // keep backslash literal
+                    curr_arg.push('\\');
+                    curr_arg.push(c);
+                }
+            } else {
+                curr_arg.push(c);
+            }
+
             escaped = false;
             continue;
         }
