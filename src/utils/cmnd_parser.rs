@@ -46,7 +46,7 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
         -correct order - back_slash-> single_quotes, double_quotes-> space splitting-> literal char
         -reason for this order -effect of these rules on parsing(scope of influencing)
         -Rules that change interpretation must run before rules that consume characters -here \ changes interpret. and quotes and spaces consume chars*/
-        if c == slash && !in_quotes && !in_double_quotes{
+        if c == slash && !in_quotes {
             escaped = true;
             continue;
         }
