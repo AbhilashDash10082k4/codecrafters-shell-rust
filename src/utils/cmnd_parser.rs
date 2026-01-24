@@ -33,7 +33,7 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
     let double_quotes = '\"';
 
     /*stage19 - escaped*/
-    let mut escaped = true;
+    let mut escaped = false;
     let slash = '\\';
 
     for c in curr_arg_buffer {
