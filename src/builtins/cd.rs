@@ -49,7 +49,8 @@ pub fn handle(cmnd: &Vec<String>) -> bool {
     let child = Command::new(cd).current_dir(path_to_change).spawn(); -this is wrong for following reasons -
     - this spawns a child process which terminates after changing the directory of the process but the parent dir of the shell remains same
     -child processes never affect the parent process
-    */
+    -irrefutable pattern -matches all the cases a pattern represents
+    -refutable pattern -some values of a pattern are not matched*/
     if let Ok(_new_curr_pathl) = env::set_current_dir(&gen_path) {
         return true;
     } else {

@@ -52,6 +52,6 @@ pub fn start() {
         if execute_file::handle(&args) {
             continue;
         }
-        println!("{}: command not found", cmnd.raw.trim());
+        println!("{}: command not found", &args[0]);
     }
 }
