@@ -53,7 +53,7 @@ pub fn start() {
             continue;
         }
         println!("{}: command not found", &args[0]);
-        eprintln!("{:?}", args);
+        // eprintln!("{:?}", args);
 
     }
 }

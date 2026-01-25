@@ -50,8 +50,13 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
             escaped = !escaped;
             continue;
         }
-        if !escaped {
+        if escaped {
             curr_arg.push(c);
+            continue;
+        }
+        if c == double_quotes && !in_quotes {
+            /*toggles only if not in ''*/
+            in_double_quotes = !in_double_quotes;
             continue;
         }
         if c == '\'' && !in_double_quotes {
@@ -60,11 +65,6 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
             in_quotes = !in_quotes;
             /*adding continue helps as it skips the toggling char as soon as it is matched
             control chars must short circuit processing (skip the entire loop on matching)*/
-            continue;
-        }
-        if c == double_quotes && !in_quotes {
-            /*toggles only if not in ''*/
-            in_double_quotes = !in_double_quotes;
             continue;
         }
         /*handling of special ' ' that are inside the ''
@@ -88,9 +88,6 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
             before skipping the loop by using continue, the quotes used to leak into this loop and were added to args */
             curr_arg.push(c);
         }
-    }
-    if escaped {
-        curr_arg.push('\\');
     }
     if !curr_arg.is_empty() {
         args.push(curr_arg);
