@@ -9,13 +9,12 @@ pub fn handle(user_input: &Vec<String>) -> bool {
         return false;
     }
     let program_name = &cmnd_arr[0];
-    match find_executable(&program_name) {
-        Some(p) => {
-            childprocess_execution::handle(p, &cmnd_arr);
-        },
+    let p = match find_executable(&program_name) {
+        Some(p) => p,
         None => {
             return false;
         }
-    };    
+    };
+    childprocess_execution::handle(p, &cmnd_arr);
     true
 }
