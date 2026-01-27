@@ -71,7 +71,7 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
                 }
             }
             //for single or outside of quotes
-            curr_arg.push(c);
+            // curr_arg.push(c);
             escaped = false;
             continue;
         }
