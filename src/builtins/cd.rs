@@ -18,10 +18,10 @@ pub fn handle(cmnd: &Vec<String>) -> bool {
     let ip_path = &user_ip[1];
 
     /*stage 15- ~ command */
-    if ip_path != &String::from("~") {
-        let user_home_dir = env::home_dir();
+    if ip_path == &String::from("~") {
+        let user_home_dir = env::var("HOME");
         match user_home_dir {
-            Some(p) => {
+            Ok(p) => {
                 let _ = env::set_current_dir(p);
                 return true;
             }
