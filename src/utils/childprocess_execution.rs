@@ -31,10 +31,10 @@ program_name != find_executable(program_name)
     }
 }; moved into child childprocess_execution::handle(&cmnd_arr);*/
 
-pub fn handle(p: PathBuf, args: &Vec<String>) {
+pub fn handle(p: PathBuf, program_name: &str, args: &Vec<String>) {
     /*earlier &cmnd[0] worked as the executables didnt have spaces. But now, absolute paths are needed to pass inorder to make the execution successful */
     if let Ok(mut child) = Command::new(p)
-        // .arg(&args[0])
+        .arg(program_name)
         .args(&args[1..])
         .stdin(Stdio::inherit())
         .stdout(Stdio::inherit())

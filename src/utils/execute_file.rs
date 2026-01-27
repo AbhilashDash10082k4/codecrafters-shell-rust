@@ -15,6 +15,6 @@ pub fn handle(user_input: &Vec<String>) -> bool {
             return false;
         }
     };
-    childprocess_execution::handle(p, &cmnd_arr);
+    childprocess_execution::handle(p, program_name, &cmnd_arr);
     true
 }
