@@ -65,13 +65,13 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
                     continue;
                 } else {
                     // Invalid escape → keep backslash literal
-                    curr_arg.push('\\');
+                    // curr_arg.push('\\');
                     curr_arg.push(c);
                     continue;
                 }
             }
             //for single or outside of quotes
-            // curr_arg.push(c);
+            curr_arg.push(c);
             escaped = false;
             continue;
         }
