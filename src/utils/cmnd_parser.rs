@@ -19,7 +19,7 @@ curr_arg_buffer, args, in_quotes
 */
 /*stage22- to change this parser from working for only arguments to working for executables (token #0)*/
 pub fn handle(cmnd: &UserInput) -> Vec<String> {
-    let curr_arg_buffer = cmnd.raw.trim().chars();
+    let mut curr_arg_buffer = cmnd.raw.trim().chars().peekable();
     let mut curr_arg = String::new();
 
     /*a flag*/
@@ -45,7 +45,7 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
     -correct order - back_slash-> single_quotes, double_quotes-> space splitting-> literal char
     -reason for this order -effect of these rules on parsing(scope of influencing)
     -Rules that change interpretation must run before rules that consume characters -here \ changes interpret. and quotes and spaces consume chars*/
-    for c in curr_arg_buffer {
+    while let Some(c) = curr_arg_buffer.next() {
         if c == slash {
             if !in_double_quotes && !in_quotes {
                 escaped = true;
@@ -54,23 +54,19 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
                 curr_arg.push(c);
                 continue;
             } else if in_double_quotes && !in_quotes {
-                escaped = true;
+                match curr_arg_buffer.peek() {
+                    Some('"') | Some('\\') => {
+                        curr_arg.push(curr_arg_buffer.next().unwrap());
+                    }
+                    _ => {
+                        curr_arg.push('\\');
+                    }
+                }
                 continue;
             }
         }
         if escaped {
-            if in_double_quotes {
-                if c == double_quotes || c == slash {
-                    curr_arg.push(c);
-                    continue;
-                } else {
-                    // Invalid escape → keep backslash literal
-                    // curr_arg.push('\\');
-                    curr_arg.push(c);
-                    continue;
-                }
-            }
-            //for single or outside of quotes
+            //for outside of quotes
             curr_arg.push(c);
             escaped = false;
             continue;
