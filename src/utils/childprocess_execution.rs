@@ -33,8 +33,8 @@ program_name != find_executable(program_name)
 
 pub fn handle(p: PathBuf, program_name: &str, args: &Vec<String>) {
     /*earlier &cmnd[0] worked as the executables didnt have spaces. But now, absolute paths are needed to pass inorder to make the execution successful */
-    if let Ok(mut child) = Command::new(p)
-        .arg(program_name)
+    if let Ok(mut child) = Command::new(program_name)
+        // .arg(program_name)
         .args(&args[1..])
         .stdin(Stdio::inherit())
         .stdout(Stdio::inherit())
