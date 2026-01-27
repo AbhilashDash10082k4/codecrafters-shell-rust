@@ -1,10 +1,10 @@
 use crate::utils::path::find_executable;
 pub fn handle(cmd: &Vec<String>) -> bool {
-    let cmd = cmd[0].trim();
-    let command_to_be_printed = match cmd.trim().strip_prefix("type ") {
-        Some(c) => c.trim(),
-        None => return false,
-    };
+    let type_cmd = cmd[0].trim();
+    if type_cmd != "type" {
+        return false;
+    }
+    let command_to_be_printed = cmd[1].trim();
 
     let builtins = ["echo", "exit", "type", "pwd", "cd"];
 
