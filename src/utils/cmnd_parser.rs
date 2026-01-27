@@ -46,29 +46,30 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
     -reason for this order -effect of these rules on parsing(scope of influencing)
     -Rules that change interpretation must run before rules that consume characters -here \ changes interpret. and quotes and spaces consume chars*/
     while let Some(c) = curr_arg_buffer.next() {
-        if c == slash {
-            if !in_double_quotes && !in_quotes {
-                escaped = true;
-                continue;
-            } else if in_quotes && !in_double_quotes {
-                curr_arg.push(c);
-                continue;
-            } else if in_double_quotes && !in_quotes {
-                match curr_arg_buffer.peek() {
-                    Some('"') | Some('\\') => {
-                        curr_arg.push(curr_arg_buffer.next().unwrap());
-                    }
-                    _ => {
-                        curr_arg.push('\\');
-                    }
-                }
-                continue;
-            }
-        }
         if escaped {
-            //for outside of quotes
-            curr_arg.push(c);
+            if in_double_quotes {
+                // inside double quotes: only \" and \\ are special
+                if c == '"' || c == '\\' {
+                    curr_arg.push(c);
+                } else {
+                    curr_arg.push('\\');
+                    curr_arg.push(c);
+                }
+            } else {
+                // outside quotes: \X → X
+                curr_arg.push(c);
+            }
             escaped = false;
+            continue;
+        }
+
+        if c == '\\' {
+            if in_quotes {
+                // literal inside single quotes
+                curr_arg.push('\\');
+            } else {
+                escaped = true;
+            }
             continue;
         }
         if c == double_quotes && !in_quotes {
