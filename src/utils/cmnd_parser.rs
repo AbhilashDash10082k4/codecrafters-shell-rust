@@ -34,7 +34,6 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
 
     /*stage19 - escaped*/
     let mut escaped = false;
-    let slash = '\\';
 
     /*3 diff behaviours
     Case1 - c = '\'' -controls the quote mode and is not added in o/p

@@ -1,5 +1,6 @@
 use std::{
-    path::PathBuf,
+    fs::File,
+    path::Path,
     process::{Command, Stdio},
 };
 /*Work of this block -take an executable file and handles it to the terminal -basically start a program
@@ -17,30 +18,63 @@ Command -tool to run other programs, used by Rust to command directly to OS
 child.wait -used to hold the shell untill the program stops
 program_name != find_executable(program_name)
 */
-/* let mut child = match Command::new(program_name)
-    .args(user_args)
-    .stdin(Stdio::inherit())
-    .stdout(Stdio::inherit())
-    .stderr(Stdio::inherit())
-    .spawn()
-{
-    Ok(c) => c,
-    Err(e) => {
-        eprintln!("Error executing {program_name}: {e}");
-        return false;
-    }
-}; moved into child childprocess_execution::handle(&cmnd_arr);*/
 
-pub fn handle(p: PathBuf, program_name: &str, args: &Vec<String>) {
+pub fn handle(program_name: &str, args: &Vec<String>) {
     /*earlier &cmnd[0] worked as the executables didnt have spaces. But now, absolute paths are needed to pass inorder to make the execution successful */
-    if let Ok(mut child) = Command::new(program_name)
-        // .arg(program_name)
-        .args(&args[1..])
-        .stdin(Stdio::inherit())
-        .stdout(Stdio::inherit())
-        .stderr(Stdio::inherit())
-        .spawn()
-    {
-        let _ = child.wait();
+    if args.is_empty() {
+        return;
+    }
+    let mut file_name = None;
+    // let op_idx = args.iter().position(|r| r == ">").expect("Err");
+    let mut cmnd_args = Vec::new();
+    let mut i = 1;
+    while i < args.len() {
+        if &args[i] == ">" {
+            if i + 1 < args.len() {
+                file_name = Some(&args[i + 1]);
+            }
+            break;
+        }
+        cmnd_args.push(&args[i]);
+        i += 1;
+    }
+    /*Cannot do directly this -Command::new(program_name)..args().stdin().stderr() becoz  creates a temporary val while being used*/
+    let mut child = Command::new(program_name);
+    child.args(cmnd_args);
+    child.stdin(Stdio::inherit());
+    child.stderr(Stdio::inherit());
+
+    if let Some(f) = file_name {
+        child.stdout(Stdio::from(File::create(f).expect("Err")));
+    } else {
+        child.stdout(Stdio::inherit());
+    }
+    if let Ok(mut c) = child.spawn() {
+        let _ = c.wait();
     }
 }
+/*stage23 ref -
+let mut buffer = File::create("foo.txt")?;
+buffer.write_all(b"some bytes")?;
+io::stdout().write_all(b"hello world")?;
+
+let output = Command::new("/bin/cat")
+    .arg("file.txt")
+    .output()?;
+
+println!("status: {}", output.status);
+io::stdout().write_all(&output.stdout)?;
+io::stderr().write_all(&output.stderr)?;
+
+let mut child = Command::new("rev")
+    .stdin(Stdio::piped())
+    .stdout(Stdio::piped())
+    .spawn()
+    .expect("Failed to spawn child process");
+
+let mut stdin = child.stdin.take().expect("Failed to open stdin");
+std::thread::spawn(move || {
+    stdin.write_all("Hello, world!".as_bytes()).expect("Failed to write to stdin");
+});
+
+let output = child.wait_with_output().expect("Failed to read stdout")*/
