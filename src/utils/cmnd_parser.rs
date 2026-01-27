@@ -36,40 +36,50 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
     let mut escaped = false;
     let slash = '\\';
 
+    /*3 diff behaviours
+    Case1 - c = '\'' -controls the quote mode and is not added in o/p
+    Case2 - c = ' ' and not in quotes -ends arg if is_quotes = false
+    Case3 - c = any other char - append it to curr_arg*/
+    /*stage 19 to 22-backslash handling -'\' is not a state trigger, it is  one-shot and is not persistent
+    -if escaped = true-push the nxt char as it is, if false, then proceed normally
+    -correct order - back_slash-> single_quotes, double_quotes-> space splitting-> literal char
+    -reason for this order -effect of these rules on parsing(scope of influencing)
+    -Rules that change interpretation must run before rules that consume characters -here \ changes interpret. and quotes and spaces consume chars*/
     for c in curr_arg_buffer {
-        /*3 diff behaviours
-        Case1 - c = '\'' -controls the quote mode and is not added in o/p
-        Case2 - c = ' ' and not in quotes -ends arg if is_quotes = false
-        Case3 - c = any other char - append it to curr_arg*/
-        /*stage 19 to 22-backslash handling -'\' is not a state trigger, it is  one-shot and is not persistent
-        -if escaped = true-push the nxt char as it is, if false, then proceed normally
-        -correct order - back_slash-> single_quotes, double_quotes-> space splitting-> literal char
-        -reason for this order -effect of these rules on parsing(scope of influencing)
-        -Rules that change interpretation must run before rules that consume characters -here \ changes interpret. and quotes and spaces consume chars*/
         if c == slash {
             if !in_double_quotes && !in_quotes {
-                escaped = !escaped;
+                escaped = true;
                 continue;
-            }
-            if in_quotes {
+            } else if in_quotes && !in_double_quotes {
                 curr_arg.push(c);
                 continue;
-            }
-            if in_double_quotes {
-                escaped = !escaped;
+            } else if in_double_quotes && !in_quotes {
+                escaped = true;
                 continue;
             }
         }
         if escaped {
+            if in_double_quotes {
+                if c == double_quotes || c == slash {
+                    curr_arg.push(c);
+                    continue;
+                } else {
+                    // Invalid escape → keep backslash literal
+                    curr_arg.push('\\');
+                    curr_arg.push(c);
+                }
+            }
+            //for single or outside of quotes
             curr_arg.push(c);
+            escaped = false;
             continue;
         }
-        if c == double_quotes && !in_quotes && !escaped {
+        if c == double_quotes && !in_quotes {
             /*toggles only if not in ''*/
             in_double_quotes = !in_double_quotes;
             continue;
         }
-        if c == '\'' && !in_double_quotes && !escaped{
+        if c == '\'' && !in_double_quotes {
             /*toggling the quote mode -no storing of ' in o/p
             -toggles only if not in "" */
             in_quotes = !in_quotes;
