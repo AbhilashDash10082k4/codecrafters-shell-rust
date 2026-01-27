@@ -1,6 +1,5 @@
 use std::{
     fs::File,
-    path::Path,
     process::{Command, Stdio},
 };
 /*Work of this block -take an executable file and handles it to the terminal -basically start a program
@@ -29,7 +28,7 @@ pub fn handle(program_name: &str, args: &Vec<String>) {
     let mut cmnd_args = Vec::new();
     let mut i = 1;
     while i < args.len() {
-        if &args[i] == ">" {
+        if &args[i] == ">" || &args[i] == "1>" {
             if i + 1 < args.len() {
                 file_name = Some(&args[i + 1]);
             }
