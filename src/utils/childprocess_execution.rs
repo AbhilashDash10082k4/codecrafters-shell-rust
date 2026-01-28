@@ -30,7 +30,7 @@ pub fn handle(program_name: &str, args: &Vec<String>) {
     let mut output_redirect_char = None;
 
     /*stage24 -stderr redirect -> decide where to put the results before even spawning/running the execution */
-    
+
     while i < args.len() {
         if &args[i] == ">" || &args[i] == "1>" || &args[i] == "2>" {
             output_redirect_char = Some(&args[i]);
@@ -56,6 +56,14 @@ pub fn handle(program_name: &str, args: &Vec<String>) {
             correct order of shell -> parser -> detect redirection-> setup stdout -> cmnd execution
             here, redirection is done on the basis of character*/
             child.stdout(Stdio::from(File::create(f).expect("Err")));
+        } else if output_redirect_char == Some(&String::from(">>")) {
+            let append_content = File::options().append(true).create(true).open(f).ok();
+            match append_content {
+                Some(c) => {
+                    child.stdout(Stdio::from(c));
+                }
+                _ => return,
+            }
         } else {
             child.stdout(Stdio::inherit());
         }
