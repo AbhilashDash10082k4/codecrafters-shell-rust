@@ -56,7 +56,7 @@ pub fn handle(program_name: &str, args: &Vec<String>) {
             correct order of shell -> parser -> detect redirection-> setup stdout -> cmnd execution
             here, redirection is done on the basis of character*/
             child.stdout(Stdio::from(File::create(f).expect("Err")));
-        } else if output_redirect_char == Some(">>") {
+        } else if output_redirect_char == Some(">>") || output_redirect_char == Some("1>>") {
             /*stage25 */
             let append_content = File::options().append(true).create(true).open(f).ok();
             match append_content {
