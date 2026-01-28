@@ -27,7 +27,7 @@ pub fn handle(program_name: &str, args: &Vec<String>) {
     // let op_idx = args.iter().position(|r| r == ">").expect("Err");
     let mut cmnd_args = Vec::new();
     let mut i = 1;
-    let mut output_redirect_char = None;
+    let mut output_redirect_char: Option<&str> = None;
 
     /*stage24 -stderr redirect -> decide where to put the results before even spawning/running the execution */
 
@@ -49,14 +49,14 @@ pub fn handle(program_name: &str, args: &Vec<String>) {
     child.stdin(Stdio::inherit());
 
     if let Some(f) = file_name {
-        if output_redirect_char == Some(&String::from(">"))
-            || output_redirect_char == Some(&String::from("1>"))
+        if output_redirect_char == Some(">")
+            || output_redirect_char == Some("1>")
         {
             /*stage24- rediretion is applied before command execution- for both external and builtin execution
             correct order of shell -> parser -> detect redirection-> setup stdout -> cmnd execution
             here, redirection is done on the basis of character*/
             child.stdout(Stdio::from(File::create(f).expect("Err")));
-        } else if output_redirect_char == Some(&String::from(">>")) {
+        } else if output_redirect_char == Some(">>") {
             /*stage25 */
             let append_content = File::options().append(true).create(true).open(f).ok();
             match append_content {
@@ -68,7 +68,7 @@ pub fn handle(program_name: &str, args: &Vec<String>) {
         } else {
             child.stdout(Stdio::inherit());
         }
-        if output_redirect_char == Some(&String::from("2>")) {
+        if output_redirect_char == Some("2>") {
             child.stderr(Stdio::from(File::create(f).expect("Err")));
         } else {
             child.stderr(Stdio::inherit());
