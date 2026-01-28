@@ -27,11 +27,17 @@ pub fn handle(program_name: &str, args: &Vec<String>) {
     // let op_idx = args.iter().position(|r| r == ">").expect("Err");
     let mut cmnd_args = Vec::new();
     let mut i = 1;
+    let output_redirect_char = None;
+
+    /*stage24 -stderr redirect -> decide where to put the results before even spawning/running the execution */
+    
     while i < args.len() {
-        if &args[i] == ">" || &args[i] == "1>" {
+        if &args[i] == ">" || &args[i] == "1>" || &args[i] == "2>" {
+            let _ = output_redirect_char == Some(&args[i]);
             if i + 1 < args.len() {
                 file_name = Some(&args[i + 1]);
             }
+            /*exit the loop since the redirection file is found coz anything after the redirection file name is ignored*/
             break;
         }
         cmnd_args.push(&args[i]);
@@ -41,15 +47,25 @@ pub fn handle(program_name: &str, args: &Vec<String>) {
     let mut child = Command::new(program_name);
     child.args(cmnd_args);
     child.stdin(Stdio::inherit());
-    child.stderr(Stdio::inherit());
 
     if let Some(f) = file_name {
-        /*rediretion is applied before command execution- for both external and builtin execution
-        correct order of shell -> parser -> detect redirection-> setup stdout -> cmnd execution*/
-        child.stdout(Stdio::from(File::create(f).expect("Err")));
-    } else {
-        child.stdout(Stdio::inherit());
+        if output_redirect_char == Some(&String::from(">"))
+            || output_redirect_char == Some(&String::from("1>"))
+        {
+            /*stage24- rediretion is applied before command execution- for both external and builtin execution
+            correct order of shell -> parser -> detect redirection-> setup stdout -> cmnd execution
+            here, redirection is done on the basis of character*/
+            child.stdout(Stdio::from(File::create(f).expect("Err")));
+        } else {
+            child.stdout(Stdio::inherit());
+        }
+        if output_redirect_char == Some(&String::from("2>")) {
+            child.stderr(Stdio::from(File::create(f).expect("Err")));
+        } else {
+            child.stderr(Stdio::inherit());
+        }
     }
+
     if let Ok(mut c) = child.spawn() {
         let _ = c.wait();
     }
