@@ -21,7 +21,7 @@ pub fn start() {
         -read_line -reads an entire line until \n is present
         */
         io::stdin().read_line(&mut cmnd.raw).unwrap();
-        /*stage27-automcomplete -> before parsed args coz the typing of command is still going on*/
+        /*stage27-automcomplete -> before parsed args coz the typing of command is still going on -> edits commands and not execute them*/
         if auto_completion::handle(&cmnd.raw) {
             continue;
         }
