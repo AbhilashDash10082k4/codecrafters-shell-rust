@@ -23,7 +23,7 @@ pub fn start() {
         io::stdin().read_line(&mut cmnd.raw).unwrap();
         /*stage27-automcomplete -> before parsed args coz the typing of command is still going on*/
         if auto_completion::handle(&cmnd.raw) {
-
+            continue;
         }
 
         /*stage22 -> parsing logic- separation of concern- parsing done only once*/
