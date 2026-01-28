@@ -1,6 +1,6 @@
 use crate::builtins::{cd, echo, exit, pwd, type_cmd};
 use crate::commands::command::UserInput;
-use crate::utils::{cmnd_parser, execute_file};
+use crate::utils::{auto_completion, cmnd_parser, execute_file};
 use std::io::{self, Write};
 pub fn start() {
     loop {
@@ -21,19 +21,24 @@ pub fn start() {
         -read_line -reads an entire line until \n is present
         */
         io::stdin().read_line(&mut cmnd.raw).unwrap();
+        /*stage27-automcomplete -> before parsed args coz the typing of command is still going on*/
+        if auto_completion::handle(&cmnd.raw) {
+
+        }
+
         /*stage22 -> parsing logic- separation of concern- parsing done only once*/
         let args = cmnd_parser::handle(&cmnd);
         if args.is_empty() {
             continue;
         }
-        //parsing the UserInput
-        if exit::handle(&args) {
-            break;
-        }
         /*stage10- run an executable
         stage22 -demands that the execution logic should be kept at last to 1st chk all the builtins and then chk the external commands*/
         if execute_file::handle(&args) {
             continue;
+        }
+        //parsing the UserInput
+        if exit::handle(&args) {
+            break;
         }
         if echo::handle(&args) {
             continue;
