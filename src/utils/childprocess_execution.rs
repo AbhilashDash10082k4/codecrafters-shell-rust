@@ -27,13 +27,13 @@ pub fn handle(program_name: &str, args: &Vec<String>) {
     // let op_idx = args.iter().position(|r| r == ">").expect("Err");
     let mut cmnd_args = Vec::new();
     let mut i = 1;
-    let output_redirect_char = None;
+    let mut output_redirect_char = None;
 
     /*stage24 -stderr redirect -> decide where to put the results before even spawning/running the execution */
     
     while i < args.len() {
         if &args[i] == ">" || &args[i] == "1>" || &args[i] == "2>" {
-            let _ = output_redirect_char == Some(&args[i]);
+            output_redirect_char = Some(&args[i]);
             if i + 1 < args.len() {
                 file_name = Some(&args[i + 1]);
             }
