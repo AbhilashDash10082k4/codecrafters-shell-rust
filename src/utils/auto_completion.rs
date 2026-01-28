@@ -12,6 +12,7 @@ pub fn handle(args: &str) -> bool{
     if args.ends_with("\t") {
         for c in builtins {
             if c.starts_with(prefix) {
+                /*this does not overwrites the "ech" or "exi" */
                 print!("\r$ {c} ");
                 io::stdout().flush().unwrap();
                 return true;
