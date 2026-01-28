@@ -32,7 +32,7 @@ pub fn handle(program_name: &str, args: &Vec<String>) {
     /*stage24 -stderr redirect -> decide where to put the results before even spawning/running the execution */
 
     while i < args.len() {
-        if &args[i] == ">" || &args[i] == "1>" || &args[i] == "2>" {
+        if &args[i] == ">" || &args[i] == "1>" || &args[i] == "2>" || &args[i] == ">>" {
             output_redirect_char = Some(&args[i]);
             if i + 1 < args.len() {
                 file_name = Some(&args[i + 1]);
@@ -57,6 +57,7 @@ pub fn handle(program_name: &str, args: &Vec<String>) {
             here, redirection is done on the basis of character*/
             child.stdout(Stdio::from(File::create(f).expect("Err")));
         } else if output_redirect_char == Some(&String::from(">>")) {
+            /*stage25 */
             let append_content = File::options().append(true).create(true).open(f).ok();
             match append_content {
                 Some(c) => {
