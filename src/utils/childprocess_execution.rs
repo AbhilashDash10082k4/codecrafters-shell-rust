@@ -32,7 +32,7 @@ pub fn handle(program_name: &str, args: &Vec<String>) {
     /*stage24 -stderr redirect -> decide where to put the results before even spawning/running the execution */
 
     while i < args.len() {
-        if &args[i] == ">" || &args[i] == "1>" || &args[i] == "2>" || &args[i] == ">>" {
+        if &args[i] == ">" || &args[i] == "1>" || &args[i] == "2>" || &args[i] == ">>" || &args[i] == "1>>"{
             output_redirect_char = Some(&args[i]);
             if i + 1 < args.len() {
                 file_name = Some(&args[i + 1]);
