@@ -7,7 +7,7 @@ pub fn handle(args: &str) -> bool{
     if args.ends_with("\t") {
         for c in builtins {
             if c.starts_with(args.trim_end_matches('\t')) {
-                print!("{c} ");
+                print!("{c}");
                 return true;
             }
         }
