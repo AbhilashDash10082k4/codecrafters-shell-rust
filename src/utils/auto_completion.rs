@@ -1,3 +1,5 @@
+use std::io::{self, Write};
+
 pub fn handle(args: &str) -> bool{
     if args.is_empty() {
         return false;
@@ -7,7 +9,8 @@ pub fn handle(args: &str) -> bool{
     if args.ends_with("\t") {
         for c in builtins {
             if c.starts_with(args.trim_end_matches('\t').trim_end_matches('\n')) {
-                print!("{c}");
+                print!("{c} ");
+                io::stdout().flush().unwrap();
                 return true;
             }
         }
