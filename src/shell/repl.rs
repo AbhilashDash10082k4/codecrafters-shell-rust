@@ -30,7 +30,11 @@ pub fn start() {
         if exit::handle(&args) {
             break;
         }
-
+/*stage10- run an executable
+        stage22 -demands that the execution logic should be kept at last to 1st chk all the builtins and then chk the external commands*/
+        if execute_file::handle(&args) {
+            continue;
+        }
         if echo::handle(&args) {
             continue;
         }
@@ -47,11 +51,7 @@ pub fn start() {
         if cd::handle(&args) {
             continue;
         }
-        /*stage10- run an executable
-        stage22 -demands that the execution logic should be kept at last to 1st chk all the builtins and then chk the external commands*/
-        if execute_file::handle(&args) {
-            continue;
-        }
+        
         println!("{}: command not found", &args[0]);
         // eprintln!("{:?}", args);
 

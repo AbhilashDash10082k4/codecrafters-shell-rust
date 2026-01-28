@@ -44,6 +44,8 @@ pub fn handle(program_name: &str, args: &Vec<String>) {
     child.stderr(Stdio::inherit());
 
     if let Some(f) = file_name {
+        /*rediretion is applied before command execution- for both external and builtin execution
+        correct order of shell -> parser -> detect redirection-> setup stdout -> cmnd execution*/
         child.stdout(Stdio::from(File::create(f).expect("Err")));
     } else {
         child.stdout(Stdio::inherit());
