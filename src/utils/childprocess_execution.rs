@@ -32,7 +32,7 @@ pub fn handle(program_name: &str, args: &Vec<String>) {
     /*stage24 -stderr redirect -> decide where to put the results before even spawning/running the execution */
 
     while i < args.len() {
-        if &args[i] == ">" || &args[i] == "1>" || &args[i] == "2>" || &args[i] == ">>" || &args[i] == "1>>"{
+        if &args[i] == ">" || &args[i] == "1>" || &args[i] == "2>" || &args[i] == ">>" || &args[i] == "1>>" || &args[i] == "2>>"{
             output_redirect_char = Some(&args[i]);
             if i + 1 < args.len() {
                 file_name = Some(&args[i + 1]);
@@ -70,7 +70,16 @@ pub fn handle(program_name: &str, args: &Vec<String>) {
         }
         if output_redirect_char == Some("2>") {
             child.stderr(Stdio::from(File::create(f).expect("Err")));
-        } else {
+        } else if output_redirect_char == Some("2>>") {
+            let append_content = File::options().append(true).create(true).open(f).ok();
+            match append_content {
+                Some(c) => {
+                    child.stderr(Stdio::from(c));
+                }
+                _ => return,
+            }
+        } 
+        else {
             child.stderr(Stdio::inherit());
         }
     }
