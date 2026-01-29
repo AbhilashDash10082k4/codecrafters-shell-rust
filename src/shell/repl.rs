@@ -4,9 +4,21 @@ use crate::utils::{auto_completion, cmnd_parser, execute_file};
 use rustyline::DefaultEditor;
 use std::io::{self, Write};
 pub fn start() {
+    /*taking the user i/p
+    -io::stdin() -user i/p pipeline -taking i/p from keyboard
+    -read_line -reads an entire line until \n is present -accepts stream of bytes from stdin pipe
+    stage27- terminal == canonical mode(line buffered) -> prints immediately the i/p given by the user
+    io::stdin().read_line(&mut cmnd.raw).unwrap();-  worked for before stage27
+    at stage27 -raw mode is reqd to read teh i/p key by key*/
+    let mut rl = DefaultEditor::new().unwrap();
+
     loop {
-        //no \n so no automatic flushing , requires manual flushing
-        print!("$ ");
+        let line = match rl.readline("$ ") {
+            Ok(l) => l,
+            Err(_) => {
+                break;
+            }
+        };
 
         /*io::stdout() -pipe to show o/p on terminal, o/p handle of terminal
         -stores in shared buffer(memory) and then pushes to terminal, has a mutex lock for safety
@@ -15,23 +27,8 @@ pub fn start() {
         -mutex lock- locks the resources/threads until the work is done on and then unlocks it, here the resource is the terminal
         -this line flushes the line print!("$ ") and then accepts the user i/p */
         io::stdout().flush().unwrap();
-        let cmnd = UserInput::new();
+        let cmnd = UserInput {raw: format!("{line}\n")};
 
-        /*taking the user i/p
-        -io::stdin() -user i/p pipeline -taking i/p from keyboard
-        -read_line -reads an entire line until \n is present -accepts stream of bytes from stdin pipe
-        stage27- terminal == canonical mode(line buffered) -> prints immediately the i/p given by the user
-        io::stdin().read_line(&mut cmnd.raw).unwrap();-  worked for before stage27
-        at stage27 -raw mode is reqd to read teh i/p key by key*/
-        let rl = DefaultEditor::new();
-        match rl {
-            Ok(mut s) => {
-                let _= s.readline(&cmnd.raw);
-            }
-            _ => {
-                return;
-            }
-        }
         /*stage27-automcomplete -> before parsed args coz the typing of command is still going on -> edits commands and not execute them
         read_line - canonical mode or cooked mode -detects tab as space and not \t
         for detection of \t -raw mode is used*/
