@@ -16,7 +16,7 @@ pub fn handle(args: &str) -> bool{
             if c.starts_with(prefix) {
                 /*this does not overwrites the "ech" or "exi"
                 todo- take cursor to start -> overwrite old i/p (ech, exi) -> write teh completed o/p*/
-                print!("\r\x1b[2K$ {c} ");
+                print!("{c} ");
                 /*flush -> stateful -> sends bytes to terminal -> depends on cursor position*/
                 io::stdout().flush().unwrap();
                 return true;
