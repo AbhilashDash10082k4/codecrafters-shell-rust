@@ -1,7 +1,8 @@
 use crate::builtins::{cd, echo, exit, pwd, type_cmd};
 use crate::commands::command::UserInput;
-use crate::utils::{auto_completion, cmnd_parser, execute_file};
-use rustyline::DefaultEditor;
+use crate::utils::auto_completion::TabCompleter;
+use crate::utils::{cmnd_parser, execute_file};
+use rustyline::{Editor, history::FileHistory};
 use std::io::{self, Write};
 pub fn start() {
     /*taking the user i/p
@@ -10,9 +11,11 @@ pub fn start() {
     stage27- terminal == canonical mode(line buffered) -> prints immediately the i/p given by the user
     io::stdin().read_line(&mut cmnd.raw).unwrap();-  worked for before stage27
     at stage27 -raw mode is reqd to read teh i/p key by key*/
-    let mut rl = DefaultEditor::new().unwrap();
+    let mut rl = Editor::<TabCompleter, FileHistory>::new().unwrap();
+    rl.set_helper(Some(TabCompleter));
 
     loop {
+        /*line = return val of readline => i/p */
         let line = match rl.readline("$ ") {
             Ok(l) => l,
             Err(_) => {
@@ -27,14 +30,13 @@ pub fn start() {
         -mutex lock- locks the resources/threads until the work is done on and then unlocks it, here the resource is the terminal
         -this line flushes the line print!("$ ") and then accepts the user i/p */
         io::stdout().flush().unwrap();
-        let cmnd = UserInput {raw: format!("{line}\n")};
+        let cmnd = UserInput {
+            raw: format!("{line}\n"),
+        };
 
         /*stage27-automcomplete -> before parsed args coz the typing of command is still going on -> edits commands and not execute them
         read_line - canonical mode or cooked mode -detects tab as space and not \t
         for detection of \t -raw mode is used*/
-        if auto_completion::handle(&cmnd.raw) {
-            continue;
-        }
 
         /*stage22 -> parsing logic- separation of concern- parsing done only once*/
         let args = cmnd_parser::handle(&cmnd);
