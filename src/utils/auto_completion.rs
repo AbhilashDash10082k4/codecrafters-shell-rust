@@ -47,6 +47,9 @@ impl Completer for TabCompleter {
         */
         let start = line[..pos].rfind(' ').map(|i| i + 1).unwrap_or(0);
 
+        /*value to be returned*/
+        let mut vec_pair: Vec<Pair> = vec![];
+
         let prefix = &line[start..pos];
 
         /*-iter-iterator -> refs to elems -> returns &&'static str
@@ -61,17 +64,17 @@ impl Completer for TabCompleter {
                 replacement: format!("{b} "),
             })
             .collect();
-
+        vec_pair = matches;
         /*autocompletion for executables*/
         if let Some(executable_file) = find_executable(prefix) {
             if let Some(file) = executable_file.to_str() {
-                Pair {
+                vec_pair = vec![Pair {
                     display: String::from(file),
                     replacement: format!("{file} "),
-                };
+                }];
             }
         }
 
-        Ok((start, matches))
+        Ok((start, vec_pair))
     }
 }
