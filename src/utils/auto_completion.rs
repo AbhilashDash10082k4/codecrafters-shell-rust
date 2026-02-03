@@ -1,5 +1,3 @@
-use std::fmt::format;
-
 use crate::utils::path::find_executable;
 use rustyline::{
     Context, Helper,
