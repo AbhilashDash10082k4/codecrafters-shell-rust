@@ -1,3 +1,6 @@
+use std::fmt::format;
+
+use crate::utils::path::find_executable;
 use rustyline::{
     Context, Helper,
     completion::{Completer, Pair},
@@ -20,12 +23,36 @@ impl Completer for TabCompleter {
         pos: usize,
         _ctx: &Context<'_>,
     ) -> rustyline::Result<(usize, Vec<Pair>)> {
+        /*-usize -start idx for replacement of text(an entire word), after a word it is the idx after the last space
+        -usize coz-it is big enough to index any obj in memory on this machine
+            -for (32,64) bit machine-(u32,u64)
+            - safe for memory operations
+        -Pair- display(suggestions to user),replace(actual replacement of og text -includes trailing space)
+        -separation of concerns-
+            -Rustyline-(cursor pos, terminbal cntrl, i/p buffer)
+            -Me- (completion logic, replacement text)
+        -Automcomplete -buffer replacement*/
+        /*builtins -[&static str;2]->
+        static= lifetime==of entire program -data which references to data type which has lifetime of entire code
+            -exists in binary, not on heap or stack
+            -compile time is allocated
+            -no lifetime annotations reqd, no dangling refs*/
         let builtins = ["echo", "exit"];
 
+        /*start of the concerned word
+        -line[..pos]=line before the cursor(currently typed line)
+        -rfind -to return Option(idx) of the last space just before the cursor to ifnd the word to replace
+        -map(|i|i+1) = takes the idx returned in Some(idx) and +1 to find the char next to last space(the first char of the word to be autocompleted)
+        -if no such idx exists -start from 0
+        */
         let start = line[..pos].rfind(' ').map(|i| i + 1).unwrap_or(0);
 
         let prefix = &line[start..pos];
 
+        /*-iter-iterator -> refs to elems -> returns &&'static str
+        -.filter(|b| b.starts_with(prefix) = filters out from the array the matching strings- uses auto-deref(*b) -> returns Iterator<Item = &&str>
+        -.map(|b| Pair {..} = takes this matched word and gives to 2 behaviours defined in Pair struct) -does auto-deref (*b) ->returns impl Iterator<Item = Pair>
+        */
         let matches = builtins
             .iter()
             .filter(|b| b.starts_with(prefix))
@@ -34,6 +61,16 @@ impl Completer for TabCompleter {
                 replacement: format!("{b} "),
             })
             .collect();
+
+        /*autocompletion for executables*/
+        if let Some(executable_file) = find_executable(prefix) {
+            if let Some(file) = executable_file.to_str() {
+                Pair {
+                    display: String::from(file),
+                    replacement: format!("{file} "),
+                };
+            }
+        }
 
         Ok((start, matches))
     }

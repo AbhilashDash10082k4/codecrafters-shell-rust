@@ -1,6 +1,6 @@
 use std::{env, path::{Path, PathBuf}};
 
-pub fn find_executable(cmd: &String) -> Option<PathBuf> {
+pub fn find_executable(cmd: &str) -> Option<PathBuf> {
     //Read PATH
     let cmnd = cmd.trim();
 

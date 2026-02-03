@@ -1,9 +1,14 @@
-use crate::builtins::{cd, echo, exit, pwd, type_cmd};
-use crate::commands::command::UserInput;
-use crate::utils::auto_completion::TabCompleter;
-use crate::utils::{cmnd_parser, execute_file};
+use crate::{
+    builtins::{cd, echo, exit, pwd, type_cmd},
+    commands::command::UserInput,
+    utils::{auto_completion::TabCompleter, cmnd_parser, execute_file},
+};
 use rustyline::{Editor, history::FileHistory};
 use std::io::{self, Write};
+/*working of this project -Keyboard → Terminal Driver → Rustyline → Your code
+model of this code -Keyboard → key events → terminal driver → line editor → program
+there is a terminal layer in b/w keyboard and Shell*/
+
 pub fn start() {
     /*taking the user i/p
     -io::stdin() -user i/p pipeline -taking i/p from keyboard
@@ -11,11 +16,16 @@ pub fn start() {
     stage27- terminal == canonical mode(line buffered) -> prints immediately the i/p given by the user
     io::stdin().read_line(&mut cmnd.raw).unwrap();-  worked for before stage27
     at stage27 -raw mode is reqd to read teh i/p key by key*/
+    /*Editor -gives with an editor, replaces stdin.read_line
+    2gens- H-TabCompleter(Helper), I-FileHistory(CmndHistory)*/
     let mut rl = Editor::<TabCompleter, FileHistory>::new().unwrap();
+
+    /*registering of autocomplete logic to this Editor*/
     rl.set_helper(Some(TabCompleter));
 
     loop {
-        /*line = return val of readline => i/p */
+        /*line = return val of readline => i/p
+        readline- reads key events*/
         let line = match rl.readline("$ ") {
             Ok(l) => l,
             Err(_) => {
