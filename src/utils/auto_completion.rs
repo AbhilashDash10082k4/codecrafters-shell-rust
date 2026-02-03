@@ -6,6 +6,7 @@ use rustyline::{
     validate::Validator,
 };
 use std::env;
+use walkdir::WalkDir;
 pub struct TabCompleter;
 impl Helper for TabCompleter {}
 impl Validator for TabCompleter {}
@@ -69,18 +70,20 @@ impl Completer for TabCompleter {
         let path = env::var("PATH").ok();
         match path {
             Some(p) => {
-                let file_name_iter: Vec<&str> = p.split(":").collect();
-                let file_name = file_name_iter[file_name_iter.len() - 1];
-                if file_name.contains(&prefix) {
-                    vec_pair = vec![Pair {
-                        display: String::from(file_name),
-                        replacement: format!("{file_name} "),
-                    }];
+                for entry in WalkDir::new(p).into_iter().filter_map(|e| e.ok()) {
+                    // file_name_iter.push(entry);
+                    if let Some(file) = entry.file_name().to_str() {
+                        if file.contains(prefix) {
+                            vec![Pair {
+                                display: file.to_string(),
+                                replacement: format!("{file} "),
+                            }];
+                        }
+                    }
                 }
             }
             _ => {}
         }
-
         Ok((start, vec_pair))
     }
 }
