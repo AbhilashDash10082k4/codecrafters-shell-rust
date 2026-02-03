@@ -1,4 +1,3 @@
-use crate::utils::path::find_executable;
 use rustyline::{
     Context, Helper,
     completion::{Completer, Pair},
@@ -6,6 +5,7 @@ use rustyline::{
     hint::Hinter,
     validate::Validator,
 };
+use std::env;
 pub struct TabCompleter;
 impl Helper for TabCompleter {}
 impl Validator for TabCompleter {}
@@ -63,14 +63,22 @@ impl Completer for TabCompleter {
             })
             .collect();
         vec_pair = matches;
-        /*autocompletion for executables*/
-        if let Some(executable_file) = find_executable(prefix) {
-            if let Some(file) = executable_file.to_str() {
-                vec_pair = vec![Pair {
-                    display: String::from(file),
-                    replacement: format!("{file} "),
-                }];
+
+        /*autocompletion for executables -cmnd given ->somehow compare this cmnd with an existing file -> if maximum match -> autocomplete*/
+        /*compare the file with the last elem of prefix after splitting/using components*/
+        let path = env::var("PATH").ok();
+        match path {
+            Some(p) => {
+                let file_name_iter: Vec<&str> = p.split(":").collect();
+                let file_name = file_name_iter[file_name_iter.len() - 1];
+                if file_name.contains(&prefix) {
+                    vec_pair = vec![Pair {
+                        display: String::from(file_name),
+                        replacement: format!("{file_name} "),
+                    }];
+                }
             }
+            _ => {}
         }
 
         Ok((start, vec_pair))
