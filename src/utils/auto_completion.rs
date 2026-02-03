@@ -70,14 +70,16 @@ impl Completer for TabCompleter {
         let path = env::var("PATH").ok();
         match path {
             Some(p) => {
-                for entry in WalkDir::new(p).into_iter().filter_map(|e| e.ok()) {
-                    // file_name_iter.push(entry);
-                    if let Some(file) = entry.file_name().to_str() {
-                        if file.contains(prefix) {
-                            vec![Pair {
-                                display: file.to_string(),
-                                replacement: format!("{file} "),
-                            }];
+                for entry in p.split(":") {
+                    for f in WalkDir::new(entry).into_iter().filter_map(|e| e.ok()) {
+                        // file_name_iter.push(f);
+                        if let Some(file) = f.file_name().to_str() {
+                            if file.starts_with(prefix) {
+                                vec_pair.push(Pair {
+                                    display: file.to_string(),
+                                    replacement: format!("{file} "),
+                                });
+                            }
                         }
                     }
                 }
