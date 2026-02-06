@@ -97,7 +97,7 @@ impl Completer for TabCompleter {
             return Ok((start, vec![]));
          }
       }
-      let pairs:Vec<Pair> = list_paths
+      let _pairs = list_paths
          .into_iter()
          .map(|m| {
             let replacement = format!("{m} ");
@@ -105,7 +105,7 @@ impl Completer for TabCompleter {
                display: m,
                replacement,
             }
-         }).collect();
+         }).collect::<Vec<_>>();
       self.last_was_tab.set(false);
       Ok((start, vec_pair))
    }
