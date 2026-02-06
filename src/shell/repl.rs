@@ -23,7 +23,7 @@ pub fn start() {
 
    /*registering of autocomplete logic to this Editor*/
    rl.set_helper(Some(TabCompleter{
-      last_was_tab: Cell::new(false)
+      last_was_tab: Cell::new(true)
    }));
 
    loop {
