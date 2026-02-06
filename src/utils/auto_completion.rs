@@ -102,20 +102,14 @@ impl Completer for TabCompleter {
 
       // 4️⃣ MULTIPLE MATCHES → double TAB logic
       if matches.len() > 1 {
-         if !self.last_was_tab.get() {
-            // first TAB → bell
-            print!("\x07");
-            io::stdout().flush().unwrap();
-            self.last_was_tab.set(true);
-            return Ok((start, vec![]));
-         } else {
-            // second TAB → list + prompt + prefix
-            println!("\n{}", matches.join("  "));
-            print!("$ {}", prefix);
-            io::stdout().flush().unwrap();
-            self.last_was_tab.set(false);
-            return Ok((start, vec![]));
-         }
+         // MULTIPLE MATCHES → print immediately (NO bell, NO second TAB)
+if matches.len() > 1 {
+    println!("{}", matches.join("  "));
+    print!("$ {}", prefix);
+    std::io::stdout().flush().unwrap();
+    self.last_was_tab.set(false);
+    return Ok((start, vec![]));
+}
       }
 
       // 5️⃣ No matches
