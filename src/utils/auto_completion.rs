@@ -91,6 +91,8 @@ impl Completer for TabCompleter {
             return Ok((start, vec![]));
          } else {
             println!("\n{}", list_paths.join("  "));
+            print!("$ {}", prefix);
+            io::stdout().flush().unwrap();
             self.last_was_tab.set(false);
             return Ok((start, vec![]));
          }
