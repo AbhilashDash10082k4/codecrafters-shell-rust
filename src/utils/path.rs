@@ -75,7 +75,7 @@ pub fn is_executable(full_path: &PathBuf) -> bool {
          if metadata.permissions().mode() & 0o111 != 0 {
             return true;
          }
-         false
+         return false;
       }
    }
    #[cfg(windows)]
@@ -86,7 +86,7 @@ pub fn is_executable(full_path: &PathBuf) -> bool {
       ) {
          return true;
       }
-      false
+      return false;
    }
 }
 /* str::matches -returns an iterator over disjoint parts that matche over patterns

@@ -56,7 +56,7 @@ impl Completer for TabCompleter {
       let start = line[..pos].rfind(' ').map(|i| i + 1).unwrap_or(0);
 
       /*value to be returned*/
-      let mut vec_pair: Vec<Pair> = vec![];
+      let mut pairs: Vec<Pair> = Vec::new();
 
       let prefix = &line[start..pos];
 
@@ -64,17 +64,15 @@ impl Completer for TabCompleter {
       -.filter(|b| b.starts_with(prefix) = filters out from the array the matching strings- uses auto-deref(*b) -> returns Iterator<Item = &&str>
       -.map(|b| Pair {..} = takes this matched word and gives to 2 behaviours defined in Pair struct) -does auto-deref (*b) ->returns impl Iterator<Item = Pair>
       */
-      let matches = builtins
-         .iter()
-         .filter(|b| b.starts_with(prefix))
-         .map(|b| Pair {
-            display: b.to_string(),
-            replacement: format!("{b} "),
-         })
-         .collect();
-      vec_pair = matches;
-
-      /*accessing struct fileds in its own method*/
+      /*builtin completion */
+      for b in builtins {
+        if b.starts_with(prefix) {
+            pairs.push(Pair {
+                display: b.to_string(),
+                replacement: format!("{b} "),
+            });
+        }
+    }
 
       /*autocompletion for executables -cmnd given ->somehow compare this cmnd with an existing file -> if maximum match -> autocomplete*/
       /*compare the file with the last elem of prefix after splitting/using components*/
@@ -84,7 +82,7 @@ impl Completer for TabCompleter {
          .collect();
 
       list_paths.sort();
-
+      /*multiple tabs*/
       if list_paths.len() > 1 {
          if !self.last_was_tab.get() {
             print!("\x07"); // bell
@@ -97,16 +95,15 @@ impl Completer for TabCompleter {
             return Ok((start, vec![]));
          }
       }
-      let _pairs = list_paths
-         .into_iter()
-         .map(|m| {
-            let replacement = format!("{m} ");
-            Pair {
-               display: m,
-               replacement,
-            }
-         }).collect::<Vec<_>>();
+      //Single executable match → autocomplete (NO clone)
+    if let Some(m) = list_paths.pop() {
+        let replacement = format!("{m} ");
+        pairs.push(Pair {
+            display: m,
+            replacement,
+        });
+    }
       self.last_was_tab.set(false);
-      Ok((start, vec_pair))
+      Ok((start, pairs))
    }
 }
