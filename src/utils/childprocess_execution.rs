@@ -1,6 +1,6 @@
 use std::{
-    fs::File,
-    process::{Command, Stdio},
+   fs::File,
+   process::{Command, Stdio},
 };
 /*Work of this block -take an executable file and handles it to the terminal -basically start a program
 - Command::new -prepares the file to be executed , takes in the name of the program and not the entire file path
@@ -19,74 +19,77 @@ program_name != find_executable(program_name)
 */
 
 pub fn handle(program_name: &str, args: &Vec<String>) {
-    /*earlier &cmnd[0] worked as the executables didnt have spaces. But now, absolute paths are needed to pass inorder to make the execution successful */
-    if args.is_empty() {
-        return;
-    }
-    let mut file_name = None;
-    // let op_idx = args.iter().position(|r| r == ">").expect("Err");
-    let mut cmnd_args = Vec::new();
-    let mut i = 1;
-    let mut output_redirect_char: Option<&str> = None;
+   /*earlier &cmnd[0] worked as the executables didnt have spaces. But now, absolute paths are needed to pass inorder to make the execution successful */
+   if args.is_empty() {
+      return;
+   }
+   let mut file_name = None;
+   // let op_idx = args.iter().position(|r| r == ">").expect("Err");
+   let mut cmnd_args = Vec::new();
+   let mut i = 1;
+   let mut output_redirect_char: Option<&str> = None;
 
-    /*stage24 -stderr redirect -> decide where to put the results before even spawning/running the execution */
+   /*stage24 -stderr redirect -> decide where to put the results before even spawning/running the execution */
 
-    while i < args.len() {
-        if &args[i] == ">" || &args[i] == "1>" || &args[i] == "2>" || &args[i] == ">>" || &args[i] == "1>>" || &args[i] == "2>>"{
-            output_redirect_char = Some(&args[i]);
-            if i + 1 < args.len() {
-                file_name = Some(&args[i + 1]);
+   while i < args.len() {
+      if &args[i] == ">"
+         || &args[i] == "1>"
+         || &args[i] == "2>"
+         || &args[i] == ">>"
+         || &args[i] == "1>>"
+         || &args[i] == "2>>"
+      {
+         output_redirect_char = Some(&args[i]);
+         if i + 1 < args.len() {
+            file_name = Some(&args[i + 1]);
+         }
+         /*exit the loop since the redirection file is found coz anything after the redirection file name is ignored*/
+         break;
+      }
+      cmnd_args.push(&args[i]);
+      i += 1;
+   }
+   /*Cannot do directly this -Command::new(program_name)..args().stdin().stderr() becoz  creates a temporary val while being used*/
+   let mut child = Command::new(program_name);
+   child.args(cmnd_args);
+   child.stdin(Stdio::inherit());
+
+   if let Some(f) = file_name {
+      if output_redirect_char == Some(">") || output_redirect_char == Some("1>") {
+         /*stage24- rediretion is applied before command execution- for both external and builtin execution
+         correct order of shell -> parser -> detect redirection-> setup stdout -> cmnd execution
+         here, redirection is done on the basis of character*/
+         child.stdout(Stdio::from(File::create(f).expect("Err")));
+      } else if output_redirect_char == Some(">>") || output_redirect_char == Some("1>>") {
+         /*stage25 */
+         let append_content = File::options().append(true).create(true).open(f).ok();
+         match append_content {
+            Some(c) => {
+               child.stdout(Stdio::from(c));
             }
-            /*exit the loop since the redirection file is found coz anything after the redirection file name is ignored*/
-            break;
-        }
-        cmnd_args.push(&args[i]);
-        i += 1;
-    }
-    /*Cannot do directly this -Command::new(program_name)..args().stdin().stderr() becoz  creates a temporary val while being used*/
-    let mut child = Command::new(program_name);
-    child.args(cmnd_args);
-    child.stdin(Stdio::inherit());
-
-    if let Some(f) = file_name {
-        if output_redirect_char == Some(">")
-            || output_redirect_char == Some("1>")
-        {
-            /*stage24- rediretion is applied before command execution- for both external and builtin execution
-            correct order of shell -> parser -> detect redirection-> setup stdout -> cmnd execution
-            here, redirection is done on the basis of character*/
-            child.stdout(Stdio::from(File::create(f).expect("Err")));
-        } else if output_redirect_char == Some(">>") || output_redirect_char == Some("1>>") {
-            /*stage25 */
-            let append_content = File::options().append(true).create(true).open(f).ok();
-            match append_content {
-                Some(c) => {
-                    child.stdout(Stdio::from(c));
-                }
-                _ => return,
+            _ => return,
+         }
+      } else {
+         child.stdout(Stdio::inherit());
+      }
+      if output_redirect_char == Some("2>") {
+         child.stderr(Stdio::from(File::create(f).expect("Err")));
+      } else if output_redirect_char == Some("2>>") {
+         let append_content = File::options().append(true).create(true).open(f).ok();
+         match append_content {
+            Some(c) => {
+               child.stderr(Stdio::from(c));
             }
-        } else {
-            child.stdout(Stdio::inherit());
-        }
-        if output_redirect_char == Some("2>") {
-            child.stderr(Stdio::from(File::create(f).expect("Err")));
-        } else if output_redirect_char == Some("2>>") {
-            let append_content = File::options().append(true).create(true).open(f).ok();
-            match append_content {
-                Some(c) => {
-                    child.stderr(Stdio::from(c));
-                }
-                _ => return,
-            }
-        } 
-        else {
-            child.stderr(Stdio::inherit());
-        }
-    }
+            _ => return,
+         }
+      } else {
+         child.stderr(Stdio::inherit());
+      }
+   }
 
-    if let Ok(mut c) = child.spawn() {
-        let _ = c.wait();
-    }
+   if let Ok(mut c) = child.spawn() {
+      let _ = c.wait();
+   }
 }
 /*stage23 ref -
 let mut buffer = File::create("foo.txt")?;
