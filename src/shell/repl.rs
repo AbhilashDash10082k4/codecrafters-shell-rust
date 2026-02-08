@@ -30,6 +30,7 @@ pub fn start() {
       // Reset tab count for each new line
       if let Some(helper) = rl.helper_mut() {
          helper.tab_cnt.set(0);
+         continue;
       }
       
       let line = match rl.readline("$ ") {
