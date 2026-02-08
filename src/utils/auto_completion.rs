@@ -1,5 +1,5 @@
 use std::io::{self, Write};
-use std::cell::{Cell, RefCell};
+use std::cell::Cell;
 
 use crate::utils::path::{find_completions, find_executable, is_executable};
 use rustyline::{
@@ -11,6 +11,7 @@ use rustyline::{
 };
 
 /*tabcompleter lives across calls*/
+#[derive(Clone)]
 pub struct TabCompleter {
    pub tab_cnt: Cell<usize>,
 }
@@ -55,7 +56,7 @@ impl Completer for TabCompleter {
 
       // Increment tab count and get current value
       let tab_cnt = self.tab_cnt.get() + 1;
-      self.tab_cnt.set(tab_cnt);
+      self.tab_cnt.set(tab_cnt); //Cell.set -> updates the old val with the curr val, drops the old val and nothing is returned
       
       /*press bell*/
       if tab_cnt == 1 {
@@ -104,12 +105,13 @@ impl Completer for TabCompleter {
          if !list_paths.is_empty() {
             let file_list_as_string = list_paths
                .iter()
-               .filter_map(|f| f.to_str())
+               .filter_map(|f| f.file_name().and_then(|n| n.to_str()))//filter_map => returns only &str vals
                .collect::<Vec<_>>()
                .join("  ");
             println!("{}", file_list_as_string);
             println!(); // Print newline to redraw prompt on next line
             vec_to_be_returned.clear(); // Don't show autocompletion suggestions when listing
+            self.tab_cnt.set(0); // Reset for next command
          }
       }
 

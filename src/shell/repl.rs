@@ -5,7 +5,9 @@ use crate::{
 };
 use rustyline::{Editor, history::FileHistory};
 // use std::cell::Cell;
-use std::io::{self, Write};
+use std::{cell::RefCell, io::{self, Write}, ops::Deref};
+use std::cell::Cell;
+use std::rc::Rc;
 /*working of this project -Keyboard → Terminal Driver → Rustyline → Your code
 model of this code -Keyboard → key events → terminal driver → line editor → program
 there is a terminal layer in b/w keyboard and Shell*/
@@ -22,12 +24,21 @@ pub fn start() {
    let mut rl = Editor::<TabCompleter, FileHistory>::new().unwrap();
 
    /*registering of autocomplete logic to this Editor*/
-   let tab_press = TabCompleter { tab_cnt: std::cell::Cell::new(0) };
-   rl.set_helper(Some(tab_press));
+   let tab_press = Rc::new(RefCell::new(TabCompleter {
+      tab_cnt: Cell::new(0),
+   }));
+   let tab_completer = Rc::clone(&tab_press);
+   let tab_completer = tab_completer.borrow_mut().clone();
+   rl.set_helper(Some(tab_completer));
 
    loop {
       /*line => return val of readline == i/p
       readline- reads key events*/
+      // Reset tab count for each new line
+      // if let Some(helper) = rl.helper_mut() {
+      //    helper.tab_cnt.set(0);
+      // }
+      tab_press.borrow_mut().tab_cnt.set(0);
       let line = match rl.readline("$ ") {
          Ok(l) => l,
          Err(_) => {
