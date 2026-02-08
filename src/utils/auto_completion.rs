@@ -108,9 +108,9 @@ impl Completer for TabCompleter {
                .collect();
             file_names.sort(); // Sort alphabetically
             let file_list_as_string = file_names.join("  ");
-            println!(); // Move to new line first
+            // println!(); // Move to new line first
             println!("{}", file_list_as_string); // Print list
-            // println!("$ {}", prefix); // Print the prefix
+            println!("$ {}", prefix); // Print the prefix
             vec_to_be_returned.clear(); // Don't show autocompletion suggestions when listing
             self.tab_cnt.set(0); // Reset for next command
          }
