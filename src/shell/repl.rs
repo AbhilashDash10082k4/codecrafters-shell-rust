@@ -22,10 +22,8 @@ pub fn start() {
    let mut rl = Editor::<TabCompleter, FileHistory>::new().unwrap();
 
    /*registering of autocomplete logic to this Editor*/
-   let tab_press = TabCompleter { tab_cnt: 0 };
-   if tab_press.tab_cnt > 1 {
-      rl.set_helper(Some(tab_press));
-   }
+   let tab_press = TabCompleter { tab_cnt: std::cell::Cell::new(0) };
+   rl.set_helper(Some(tab_press));
 
    loop {
       /*line => return val of readline == i/p

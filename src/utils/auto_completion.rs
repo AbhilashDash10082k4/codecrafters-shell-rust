@@ -1,4 +1,5 @@
 use std::io::{self, Write};
+use std::cell::{Cell, RefCell};
 
 use crate::utils::path::{find_completions, find_executable, is_executable};
 use rustyline::{
@@ -11,7 +12,7 @@ use rustyline::{
 
 /*tabcompleter lives across calls*/
 pub struct TabCompleter {
-   pub tab_cnt: usize,
+   pub tab_cnt: Cell<usize>,
 }
 impl Helper for TabCompleter {}
 impl Validator for TabCompleter {}
@@ -52,7 +53,10 @@ impl Completer for TabCompleter {
    ) -> rustyline::Result<(usize, Vec<Pair>)> {
       let builtins = ["echo", "exit"];
 
-      let tab_cnt = self.tab_cnt;
+      // Increment tab count and get current value
+      let tab_cnt = self.tab_cnt.get() + 1;
+      self.tab_cnt.set(tab_cnt);
+      
       /*press bell*/
       if tab_cnt == 1 {
          print!("\x07");
