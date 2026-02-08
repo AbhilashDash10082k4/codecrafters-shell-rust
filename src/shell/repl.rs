@@ -3,8 +3,8 @@ use crate::{
    commands::command::UserInput,
    utils::{auto_completion::TabCompleter, cmnd_parser, execute_file},
 };
-use std::cell::Cell;
 use rustyline::{Editor, history::FileHistory};
+// use std::cell::Cell;
 use std::io::{self, Write};
 /*working of this project -Keyboard → Terminal Driver → Rustyline → Your code
 model of this code -Keyboard → key events → terminal driver → line editor → program
@@ -22,9 +22,10 @@ pub fn start() {
    let mut rl = Editor::<TabCompleter, FileHistory>::new().unwrap();
 
    /*registering of autocomplete logic to this Editor*/
-   rl.set_helper(Some(TabCompleter{
-      last_was_tab: Cell::new(true)
-   }));
+   let tab_press = TabCompleter { tab_cnt: 0 };
+   if tab_press.tab_cnt > 1 {
+      rl.set_helper(Some(tab_press));
+   }
 
    loop {
       /*line => return val of readline == i/p

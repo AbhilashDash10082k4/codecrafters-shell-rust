@@ -34,9 +34,10 @@ pub fn find_executable(complete_cmd: &str) -> Option<PathBuf> {
    None
 }
 pub fn find_completions(incomplete_cmd: &str) -> Vec<PathBuf> {
+   /*returns list of paths that whose file names start with the incomplete cmnd*/
    let path_to_chk = env::var("PATH").unwrap_or_else(|e| format!("{e}"));
    let entries = path_to_chk.split(":");
-   let mut vec_path = vec![];
+   let mut vec_path = vec![]; //list of paths
    let cmnd = incomplete_cmd.trim();
 
    for dir in entries {
@@ -48,7 +49,7 @@ pub fn find_completions(incomplete_cmd: &str) -> Vec<PathBuf> {
       .collect()-> consumes it*/
       entries.into_iter().for_each(|f| {
          if let Ok(dir_entry) = f {
-            let p = dir_entry.path();
+            let p = dir_entry.path(); //path of files present in the curerntly scanned dir
             if p.is_file() && is_executable(&p) {
                if let Some(file_path) = p.file_name() {
                   match file_path.to_str() {
@@ -64,6 +65,7 @@ pub fn find_completions(incomplete_cmd: &str) -> Vec<PathBuf> {
          }
       });
    }
+   vec_path.sort();
    vec_path
 }
 

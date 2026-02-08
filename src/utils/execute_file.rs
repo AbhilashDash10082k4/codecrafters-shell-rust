@@ -8,7 +8,7 @@ pub fn handle(user_input: &Vec<String>) -> bool {
    if user_input.is_empty() {
       return false;
    }
-   let program_name = &user_input[0];
+   let program_name = &user_input[0]; //this should be a complete cmnd
    let paths = find_executable(program_name);
    if let Some(path) = paths {
       if is_executable(&path) {
