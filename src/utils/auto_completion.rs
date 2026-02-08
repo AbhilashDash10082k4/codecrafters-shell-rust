@@ -103,11 +103,12 @@ impl Completer for TabCompleter {
       let list_paths = find_completions(&prefix); //gives sorted list of file paths
       if tab_cnt == 2 {
          if !list_paths.is_empty() {
-            let file_list_as_string = list_paths
+            let mut file_names: Vec<_> = list_paths
                .iter()
                .filter_map(|f| f.file_name().and_then(|n| n.to_str()))//filter_map => returns only &str vals
-               .collect::<Vec<_>>()
-               .join("  ");
+               .collect();
+            file_names.sort(); // Sort alphabetically
+            let file_list_as_string = file_names.join("  ");
             println!("{}", file_list_as_string);
             println!(); // Print newline to redraw prompt on next line
             vec_to_be_returned.clear(); // Don't show autocompletion suggestions when listing
