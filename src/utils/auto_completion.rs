@@ -109,7 +109,8 @@ impl Completer for TabCompleter {
                .collect();
             file_names.sort(); // Sort alphabetically
             let file_list_as_string = file_names.join("  ");
-            println!("\n{}", file_list_as_string); // Print newline first, then list
+            println!(); // Move to new line first
+            println!("{}", file_list_as_string); // Print list
             vec_to_be_returned.clear(); // Don't show autocompletion suggestions when listing
             self.tab_cnt.set(0); // Reset for next command
          }
