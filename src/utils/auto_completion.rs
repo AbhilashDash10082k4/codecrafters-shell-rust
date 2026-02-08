@@ -11,7 +11,6 @@ use rustyline::{
 };
 
 /*tabcompleter lives across calls*/
-#[derive(Clone)]
 pub struct TabCompleter {
    pub tab_cnt: Cell<usize>,
 }
