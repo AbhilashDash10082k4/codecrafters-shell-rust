@@ -73,7 +73,7 @@ impl Completer for TabCompleter {
 
       let prefix = &line[start..pos];
       let mut vec_to_be_returned: Vec<Pair> = vec![];
-      
+
       /*compare the file with the last elem of prefix after splitting/using components*/
       let list_paths = find_completions(&prefix); //gives sorted list of file paths
       if tab_cnt == 2 {
@@ -85,6 +85,7 @@ impl Completer for TabCompleter {
             file_names.sort(); // Sort alphabetically
             let file_list_as_string = file_names.join("  ");
             println!("\n{}", file_list_as_string);
+            println!("$ {}", prefix);
             vec_to_be_returned.clear(); // Don't show autocompletion suggestions when listing
             self.tab_cnt.set(0); // Reset for next command
          }
