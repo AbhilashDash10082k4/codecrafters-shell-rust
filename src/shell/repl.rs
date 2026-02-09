@@ -3,8 +3,11 @@ use crate::{
    commands::command::UserInput,
    utils::{auto_completion::TabCompleter, cmnd_parser, execute_file},
 };
-use rustyline::{Editor, history::FileHistory};
-use std::{cell::Cell, io::{self, Write}};
+use rustyline::{Config, Editor, history::FileHistory};
+use std::{
+   cell::Cell,
+   io::{self, Write},
+};
 /*working of this project -Keyboard → Terminal Driver → Rustyline → Your code
 model of this code -Keyboard → key events → terminal driver → line editor → program
 there is a terminal layer in b/w keyboard and Shell*/
@@ -18,10 +21,15 @@ pub fn start() {
    at stage27 -raw mode is reqd to read the i/p key by key*/
    /*Editor -gives with an editor, replaces stdin.read_line
    2gens- H-TabCompleter(Helper), I-FileHistory(CmndHistory)*/
-   let mut rl = Editor::<TabCompleter, FileHistory>::new().unwrap();
+   let config = Config::builder()
+      .completion_show_all_if_ambiguous(true)
+      .build();
+   let mut rl = Editor::<TabCompleter, FileHistory>::with_config(config).unwrap();
 
    /*registering of autocomplete logic to this Editor*/
-   let tab_press = TabCompleter { tab_cnt: Cell::new(1) };
+   let tab_press = TabCompleter {
+      tab_cnt: Cell::new(1),
+   };
    rl.set_helper(Some(tab_press));
 
    loop {
