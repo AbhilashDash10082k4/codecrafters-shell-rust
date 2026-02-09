@@ -84,7 +84,7 @@ impl Completer for TabCompleter {
                .collect();
             file_names.sort(); // Sort alphabetically
             let file_list_as_string = file_names.join("  ");
-            println!("{}", file_list_as_string);
+            println!("\n{}", file_list_as_string);
             vec_to_be_returned.clear(); // Don't show autocompletion suggestions when listing
             self.tab_cnt.set(0); // Reset for next command
          }
