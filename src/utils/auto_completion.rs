@@ -1,5 +1,5 @@
-use std::io::{self, Write};
 use std::cell::Cell;
+use std::io::{self, Write};
 
 use crate::utils::path::{find_completions, find_executable, is_executable};
 use rustyline::{
@@ -56,7 +56,7 @@ impl Completer for TabCompleter {
       // Increment tab count and get current value
       let tab_cnt = self.tab_cnt.get() + 1;
       self.tab_cnt.set(tab_cnt); //Cell.set -> updates the old val with the curr val, drops the old val and nothing is returned
-      
+
       /*press bell*/
       if tab_cnt == 1 {
          print!("\x07");
@@ -73,7 +73,22 @@ impl Completer for TabCompleter {
 
       let prefix = &line[start..pos];
       let mut vec_to_be_returned: Vec<Pair> = vec![];
-
+      
+      /*compare the file with the last elem of prefix after splitting/using components*/
+      let list_paths = find_completions(&prefix); //gives sorted list of file paths
+      if tab_cnt == 2 {
+         if !list_paths.is_empty() {
+            let mut file_names: Vec<_> = list_paths
+               .iter()
+               .filter_map(|f| f.file_name().and_then(|n| n.to_str())) //filter_map => returns only Some(&str) vals
+               .collect();
+            file_names.sort(); // Sort alphabetically
+            let file_list_as_string = file_names.join("  ");
+            println!("{}", file_list_as_string);
+            vec_to_be_returned.clear(); // Don't show autocompletion suggestions when listing
+            self.tab_cnt.set(0); // Reset for next command
+         }
+      }
       // builtins-for complete commands
       let matches: Vec<Pair> = builtins
          .iter()
@@ -95,24 +110,6 @@ impl Completer for TabCompleter {
                   replacement: format!("{path_to_display} "),
                });
             }
-         }
-      }
-
-      /*compare the file with the last elem of prefix after splitting/using components*/
-      let list_paths = find_completions(&prefix); //gives sorted list of file paths
-      if tab_cnt == 2 {
-         if !list_paths.is_empty() {
-            let mut file_names: Vec<_> = list_paths
-               .iter()
-               .filter_map(|f| f.file_name().and_then(|n| n.to_str()))//filter_map => returns only &str vals
-               .collect();
-            file_names.sort(); // Sort alphabetically
-            let file_list_as_string = file_names.join("  ");
-            println!(); // Move to new line first
-            println!("{}", file_list_as_string); // Print list
-            println!("$ {}", prefix); // Print the prefix
-            vec_to_be_returned.clear(); // Don't show autocompletion suggestions when listing
-            self.tab_cnt.set(0); // Reset for next command
          }
       }
 

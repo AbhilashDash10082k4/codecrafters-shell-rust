@@ -31,7 +31,7 @@ pub fn start() {
       if let Some(helper) = rl.helper_mut() {
          helper.tab_cnt.set(0);
       }
-      
+
       let line = match rl.readline("$ ") {
          Ok(l) => l,
          Err(_) => {
