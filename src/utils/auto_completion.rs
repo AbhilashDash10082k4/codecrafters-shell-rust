@@ -83,9 +83,12 @@ impl Completer for TabCompleter {
                .filter_map(|f| f.file_name().and_then(|n| n.to_str())) //filter_map => returns only Some(&str) vals
                .collect();
             file_names.sort(); // Sort alphabetically
-            let file_list_as_string = file_names.join("  ");
-            // println!("\n{}", file_list_as_string);
-            vec_to_be_returned.clear(); // Don't show autocompletion suggestions when listing
+            for file_name in file_names {
+               vec_to_be_returned.push(Pair {
+                  display: file_name.to_string(),
+                  replacement: format!("{file_name} "),
+               });
+            }
             self.tab_cnt.set(0); // Reset for next command
          }
       }

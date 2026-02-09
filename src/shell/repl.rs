@@ -3,7 +3,7 @@ use crate::{
    commands::command::UserInput,
    utils::{auto_completion::TabCompleter, cmnd_parser, execute_file},
 };
-use rustyline::{Config, Editor, history::FileHistory};
+use rustyline::{CompletionType, Config, Editor, history::FileHistory};
 use std::{
    cell::Cell,
    io::{self, Write},
@@ -23,6 +23,7 @@ pub fn start() {
    2gens- H-TabCompleter(Helper), I-FileHistory(CmndHistory)*/
    let config = Config::builder()
       .completion_show_all_if_ambiguous(true)
+      .completion_type(CompletionType::List)
       .build();
    let mut rl = Editor::<TabCompleter, FileHistory>::with_config(config).unwrap();
 
