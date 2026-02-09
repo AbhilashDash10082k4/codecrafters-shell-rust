@@ -21,7 +21,7 @@ pub fn start() {
    let mut rl = Editor::<TabCompleter, FileHistory>::new().unwrap();
 
    /*registering of autocomplete logic to this Editor*/
-   let tab_press = TabCompleter { tab_cnt: Cell::new(0) };
+   let tab_press = TabCompleter { tab_cnt: Cell::new(1) };
    rl.set_helper(Some(tab_press));
 
    loop {

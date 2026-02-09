@@ -88,27 +88,27 @@ impl Completer for TabCompleter {
             vec_to_be_returned.clear(); // Don't show autocompletion suggestions when listing
             self.tab_cnt.set(0); // Reset for next command
          }
-         // builtins-for complete commands
-         let matches: Vec<Pair> = builtins
-            .iter()
-            .filter(|b| b.starts_with(prefix))
-            .map(|b| Pair {
-               display: b.to_string(),
-               replacement: format!("{b} "),
-            })
-            .collect();
-         vec_to_be_returned = matches;
+      }
+      // builtins-for complete commands
+      let matches: Vec<Pair> = builtins
+         .iter()
+         .filter(|b| b.starts_with(prefix))
+         .map(|b| Pair {
+            display: b.to_string(),
+            replacement: format!("{b} "),
+         })
+         .collect();
+      vec_to_be_returned = matches;
 
-         //autocompletion for executable (for complete commands)-
-         let complete_executable_path = find_executable(&prefix);
-         if let Some(p) = complete_executable_path {
-            if p.is_file() && is_executable(&p) {
-               if let Some(path_to_display) = p.to_str() {
-                  vec_to_be_returned.push(Pair {
-                     display: path_to_display.to_string(),
-                     replacement: format!("{path_to_display} "),
-                  });
-               }
+      //autocompletion for executable (for complete commands)-
+      let complete_executable_path = find_executable(&prefix);
+      if let Some(p) = complete_executable_path {
+         if p.is_file() && is_executable(&p) {
+            if let Some(path_to_display) = p.to_str() {
+               vec_to_be_returned.push(Pair {
+                  display: path_to_display.to_string(),
+                  replacement: format!("{path_to_display} "),
+               });
             }
          }
       }
