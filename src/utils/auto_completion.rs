@@ -13,6 +13,64 @@ use std::cell::Cell;
 use std::io::{self, Write};
 
 /*tabcompleter lives across calls*/
+/*ingredients for stage 29-
+pub enum CompletionType {
+   List,
+}
+pub trait Candidate {
+    // Required methods
+    fn display(&self) -> &str;
+    fn replacement(&self) -> &str;
+}
+pub struct Pair {
+    pub display: String,
+    pub replacement: String,
+}
+pub trait Completer {
+    type Candidate: Candidate;
+
+    // Provided methods
+    fn complete(
+        &self,
+        line: &str,
+        pos: usize,
+        ctx: &Context<'_>,
+    ) -> Result<(usize, Vec<Self::Candidate>)> { ... }
+    fn update(
+        &self,
+        line: &mut LineBuffer,
+        start: usize,
+        elected: &str,
+        cl: &mut Changeset,
+    ) { ... }
+}
+pub enum CompletionType {
+   List, Circular, Fuzzy
+}
+impl Builder{
+   pub fn new() -> Self //Returns a Config builder.
+   pub fn completion_type(self, completion_type: CompletionType) -> Self //Set completion_type.
+   pub fn completion_show_all_if_ambiguous(
+    self,
+    completion_show_all_if_ambiguous: bool,
+) -> Self //Choose whether or not to show all alternatives immediately when using list completion,By default, a second tab is needed.
+   pub fn build(self) -> Config //Builds a Config with the settings specified so far.
+}
+impl Config {
+   pub fn builder() -> Builder //Returns a Config builder.
+   pub fn completion_type(&self) -> CompletionType //Completion behaviour.
+   pub fn completion_show_all_if_ambiguous(&self) -> bool //Directly show all alternatives when using list completion, By default, they are not, a second tab is needed
+}
+impl<H: Helper> Editor<H, DefaultHistory>{
+   pub fn new() -> Result<Self> //Create an editor with the default configuration
+   pub fn with_config(config: Config) -> Result<Self> //Create an editor with a specific configuration.
+   pub fn set_helper(&mut self, helper: Option<H>) //Register a callback function to be called for tab-completion or to show hints to the user at the right of the prompt.
+   pub fn helper_mut(&mut self) -> Option<&mut H> //Return a mutable reference to the helper.
+   pub fn helper(&self) -> Option<&H> //Return an immutable reference to the helper.
+}
+impl<H: Helper, I: History> Configurer for Editor<H, I>{
+   fn config_mut(&mut self) -> &mut Config //Config accessor.
+}*/
 pub struct TabCompleter {
    pub tab_cnt: Cell<usize>,
 }
@@ -71,14 +129,8 @@ impl Completer for TabCompleter {
       -map(|i|i+1) = takes the idx returned in Some(idx) and +1 to find the char next to last space(the first char of the word to be autocompleted)
       -if no such idx exists -start from 0
       */
-      let mut start = 0;
-      match line[0..pos].rfind(' ') {
-         Some(mut i) => {
-            i += 1;
-            start = i;
-         }
-         None => {}
-      }
+      
+      let start = line[0..pos].rfind(' ').map(|i| i+1).unwrap_or(0);
 
       let prefix = &line[start..pos];
       let mut vec_to_be_returned: Vec<Pair> = vec![];
