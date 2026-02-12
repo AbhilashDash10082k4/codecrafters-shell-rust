@@ -29,7 +29,7 @@ pub fn start() {
 
    /*registering of autocomplete logic to this Editor*/
    let tab_press = TabCompleter {
-      tab_cnt: Cell::new(1),
+      tab_cnt: Cell::new(0),
    };
    rl.set_helper(Some(tab_press));
 

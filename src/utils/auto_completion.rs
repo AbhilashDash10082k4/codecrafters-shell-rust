@@ -1,7 +1,7 @@
-use std::cell::Cell;
-use std::io::{self, Write};
-
-use crate::utils::path::{find_completions, find_executable, is_executable};
+use crate::{
+   shell::repl::start,
+   utils::path::{find_completions, find_executable, is_executable},
+};
 use rustyline::{
    Context, Helper,
    completion::{Completer, Pair},
@@ -9,6 +9,8 @@ use rustyline::{
    hint::Hinter,
    validate::Validator,
 };
+use std::cell::Cell;
+use std::io::{self, Write};
 
 /*tabcompleter lives across calls*/
 pub struct TabCompleter {
@@ -54,7 +56,7 @@ impl Completer for TabCompleter {
       let builtins = ["echo", "exit"];
 
       // Increment tab count and get current value
-      let tab_cnt = self.tab_cnt.get() + 1;
+      let tab_cnt = self.tab_cnt.get() + 1; //.get -> returns copy of current val
       self.tab_cnt.set(tab_cnt); //Cell.set -> updates the old val with the curr val, drops the old val and nothing is returned
 
       /*press bell*/
@@ -69,7 +71,14 @@ impl Completer for TabCompleter {
       -map(|i|i+1) = takes the idx returned in Some(idx) and +1 to find the char next to last space(the first char of the word to be autocompleted)
       -if no such idx exists -start from 0
       */
-      let start = line[..pos].rfind(' ').map(|i| i + 1).unwrap_or(0);
+      let mut start = 0;
+      match line[0..pos].rfind(' ') {
+         Some(mut i) => {
+            i += 1;
+            start = i;
+         }
+         None => {}
+      }
 
       let prefix = &line[start..pos];
       let mut vec_to_be_returned: Vec<Pair> = vec![];
@@ -78,11 +87,10 @@ impl Completer for TabCompleter {
       let list_paths = find_completions(&prefix); //gives sorted list of file paths
       if tab_cnt == 2 {
          if !list_paths.is_empty() {
-            let mut file_names: Vec<_> = list_paths
+            let file_names: Vec<_> = list_paths
                .iter()
                .filter_map(|f| f.file_name().and_then(|n| n.to_str())) //filter_map => returns only Some(&str) vals
                .collect();
-            file_names.sort(); // Sort alphabetically
             for file_name in file_names {
                vec_to_be_returned.push(Pair {
                   display: file_name.to_string(),
