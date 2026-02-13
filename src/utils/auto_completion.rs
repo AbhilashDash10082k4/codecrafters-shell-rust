@@ -1,7 +1,4 @@
-use crate::{
-   shell::repl::start,
-   utils::path::{find_completions, find_executable, is_executable},
-};
+use crate::utils::path::{find_completions, find_executable, is_executable};
 use rustyline::{
    Context, Helper,
    completion::{Completer, Pair},
@@ -129,8 +126,8 @@ impl Completer for TabCompleter {
       -map(|i|i+1) = takes the idx returned in Some(idx) and +1 to find the char next to last space(the first char of the word to be autocompleted)
       -if no such idx exists -start from 0
       */
-      
-      let start = line[0..pos].rfind(' ').map(|i| i+1).unwrap_or(0);
+
+      let start = line[0..pos].rfind(' ').map(|i| i + 1).unwrap_or(0);
 
       let prefix = &line[start..pos];
       let mut vec_to_be_returned: Vec<Pair> = vec![];
@@ -139,10 +136,11 @@ impl Completer for TabCompleter {
       let list_paths = find_completions(&prefix); //gives sorted list of file paths
       if tab_cnt == 2 {
          if !list_paths.is_empty() {
-            let file_names: Vec<_> = list_paths
+            let mut file_names: Vec<_> = list_paths
                .iter()
-               .filter_map(|f| f.file_name().and_then(|n| n.to_str())) //filter_map => returns only Some(&str) vals
+               .filter_map(|f| f.file_name().and_then(|n| n.to_str()))
                .collect();
+            file_names.sort();
             for file_name in file_names {
                vec_to_be_returned.push(Pair {
                   display: file_name.to_string(),
@@ -153,21 +151,29 @@ impl Completer for TabCompleter {
          }
       }
       // builtins-for complete commands
-      let matches: Vec<Pair> = builtins
-         .iter()
-         .filter(|b| b.starts_with(prefix))
-         .map(|b| Pair {
-            display: b.to_string(),
-            replacement: format!("{b} "),
-         })
-         .collect();
-      vec_to_be_returned = matches;
+      for builtin in builtins {
+         if builtin.starts_with(prefix) {
+            vec_to_be_returned.push(Pair {
+               display: builtin.to_string(),
+               replacement: format!("{builtin} "),
+            })
+         }
+      }
+      // let matches: Vec<Pair> = builtins
+      //    .iter()
+      //    .filter(|b| b.starts_with(prefix))
+      //    .map(|b| Pair {
+      //       display: b.to_string(),
+      //       replacement: format!("{b} "),
+      //    })
+      //    .collect();
+      // vec_to_be_returned = matches;
 
       //autocompletion for executable (for complete commands)-
       let complete_executable_path = find_executable(&prefix);
       if let Some(p) = complete_executable_path {
          if p.is_file() && is_executable(&p) {
-            if let Some(path_to_display) = p.to_str() {
+            if let Some(path_to_display) = p.file_name().and_then(|n| n.to_str()) {
                vec_to_be_returned.push(Pair {
                   display: path_to_display.to_string(),
                   replacement: format!("{path_to_display} "),

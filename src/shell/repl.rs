@@ -22,7 +22,7 @@ pub fn start() {
    /*Editor -gives with an editor, replaces stdin.read_line
    2gens- H-TabCompleter(Helper), I-FileHistory(CmndHistory)*/
    let config = Config::builder()
-      .completion_show_all_if_ambiguous(true)
+      // .completion_show_all_if_ambiguous(true)
       .completion_type(CompletionType::List)
       .build();
    let mut rl = Editor::<TabCompleter, FileHistory>::with_config(config).unwrap();
