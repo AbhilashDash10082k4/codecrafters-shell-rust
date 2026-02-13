@@ -149,26 +149,27 @@ impl Completer for TabCompleter {
             self.tab_cnt.set(0); // Reset for next command
             return Ok((start, vec![]));
          }
-      }
-      // builtins-for complete commands
-      for builtin in builtins {
-         if builtin.starts_with(prefix) {
-            vec_to_be_returned.push(Pair {
-               display: builtin.to_string(),
-               replacement: format!("{builtin} "),
-            })
-         }
-      }
-
-      //autocompletion for executable (for complete commands)-
-      let complete_executable_path = find_executable(&prefix);
-      if let Some(p) = complete_executable_path {
-         if p.is_file() && is_executable(&p) {
-            if let Some(path_to_display) = p.file_name().and_then(|n| n.to_str()) {
+      } else {
+         // builtins-for complete commands
+         for builtin in builtins {
+            if builtin.starts_with(prefix) {
                vec_to_be_returned.push(Pair {
-                  display: path_to_display.to_string(),
-                  replacement: format!("{path_to_display} "),
-               });
+                  display: builtin.to_string(),
+                  replacement: format!("{builtin} "),
+               })
+            }
+         }
+
+         //autocompletion for executable (for complete commands)-
+         let complete_executable_path = find_executable(&prefix);
+         if let Some(p) = complete_executable_path {
+            if p.is_file() && is_executable(&p) {
+               if let Some(path_to_display) = p.file_name().and_then(|n| n.to_str()) {
+                  vec_to_be_returned.push(Pair {
+                     display: path_to_display.to_string(),
+                     replacement: format!("{path_to_display} "),
+                  });
+               }
             }
          }
       }
