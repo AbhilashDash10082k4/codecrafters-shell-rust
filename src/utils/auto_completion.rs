@@ -143,7 +143,7 @@ impl Completer for TabCompleter {
             file_names.sort();
             // Manually print the list
             let file_list_as_string = file_names.join("  ");
-            println!("{} ", file_list_as_string);
+            println!("\n{}", file_list_as_string);
             // Return empty - don't show rustyline's list
             vec_to_be_returned.clear();
             self.tab_cnt.set(0); // Reset for next command
@@ -172,6 +172,6 @@ impl Completer for TabCompleter {
          }
       }
 
-      Ok((start, vec![]))
+      Ok((start, vec_to_be_returned))
    }
 }
