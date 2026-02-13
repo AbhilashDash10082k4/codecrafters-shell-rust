@@ -145,6 +145,8 @@ impl Completer for TabCompleter {
          if tab_cnt == 2 {
             let file_list_as_string = file_names.join("  ");
             println!("\n{}", file_list_as_string);
+            print!("$ {}", prefix);
+            io::stdout().flush().unwrap();
             vec_to_be_returned.clear();
             self.tab_cnt.set(0); // Reset for next command
          }
@@ -171,6 +173,8 @@ impl Completer for TabCompleter {
          if tab_cnt == 2 {
             let matched_builtins_as_string = matched_builtins.join("  ");
             println!("\n{}", matched_builtins_as_string);
+            print!("$ {}", prefix);
+            io::stdout().flush().unwrap();
             vec_to_be_returned.clear();
             self.tab_cnt.set(0); // Reset for next command
          }
@@ -200,7 +204,9 @@ impl Completer for TabCompleter {
             io::stdout().flush().unwrap();
          }
          if tab_cnt == 2 {
-            println!("\n{:?}", matched_executable_as_string);
+            println!("\n{}", matched_executable_as_string.join("  "));
+            print!("$ {}", prefix);
+            io::stdout().flush().unwrap();
             vec_to_be_returned.clear();
             self.tab_cnt.set(0); // Reset for next command
          }
@@ -213,3 +219,24 @@ impl Completer for TabCompleter {
       Ok((start, vec_to_be_returned))
    }
 }
+// fn autocomplete (tab_cnt:usize,matches: Vec<String>) {
+//    let matches_len = matches.len();
+//    let mut vec_to_be_returned = vec![];
+//    if matches_len > 1 {
+//          if tab_cnt == 1 {
+//             print!("\x07");
+//             io::stdout().flush().unwrap();
+//          }
+//          if tab_cnt == 2 {
+//             println!("\n{:?}", matches);
+//             vec_to_be_returned.clear();
+//             self.tab_cnt.set(0); // Reset for next command
+//          }
+//       } else if matches_len == 1 && tab_cnt == 1 {
+//          vec_to_be_returned.push(Pair {
+//             display: matches[0].to_string(),
+//             replacement: format!("{}", matches[0].to_string()),
+//          })
+
+//       }
+// }
