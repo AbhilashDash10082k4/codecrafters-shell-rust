@@ -108,18 +108,15 @@ impl Completer for TabCompleter {
       pos: usize,
       _ctx: &Context<'_>,
    ) -> rustyline::Result<(usize, Vec<Pair>)> {
+      /*CORE LOGIC-
+      1match-> Autocomplete on first TAB press
+      many matches->  Ring Bell on 1st TAB and then list all the matches*/
+      let mut no_of_matches = 0;
       let builtins = ["echo", "exit"];
 
       // Increment tab count and get current value
       let tab_cnt = self.tab_cnt.get() + 1; //.get -> returns copy of current val
       self.tab_cnt.set(tab_cnt); //Cell.set -> updates the old val with the curr val, drops the old val and nothing is returned
-
-      /*press bell*/
-      if tab_cnt == 1 {
-         print!("\x07");
-         io::stdout().flush().unwrap();
-      }
-
       /*start of the concerned word
       -line[..pos]=line before the cursor(currently typed line)
       -rfind -to return Option(idx) of the last space just before the cursor to find the word to replace
@@ -134,27 +131,30 @@ impl Completer for TabCompleter {
 
       /*compare the file with the last elem of prefix after splitting/using components*/
       let list_paths = find_completions(&prefix); //gives sorted list of file paths
-      if tab_cnt == 2 {
+      no_of_matches += list_paths.len();
+      if tab_cnt == 2 && no_of_matches > 1{
          if !list_paths.is_empty() {
             let mut file_names: Vec<_> = list_paths
                .iter()
                .filter_map(|f| f.file_name().and_then(|n| n.to_str()))
                .collect();
             file_names.sort();
+
             // Manually print the list
             let file_list_as_string = file_names.join("  ");
             println!("\n{}", file_list_as_string);
-            print!("$ {}", prefix);
-            io::stdout().flush().unwrap();
+
             // Return empty - don't show rustyline's list
             vec_to_be_returned.clear();
             self.tab_cnt.set(0); // Reset for next command
+            
             return Ok((start, vec![]));
          }
       } else {
          // builtins-for complete commands
          for builtin in builtins {
             if builtin.starts_with(prefix) {
+               no_of_matches = 1;
                vec_to_be_returned.push(Pair {
                   display: builtin.to_string(),
                   replacement: format!("{builtin} "),
@@ -166,6 +166,7 @@ impl Completer for TabCompleter {
          let complete_executable_path = find_executable(&prefix);
          if let Some(p) = complete_executable_path {
             if p.is_file() && is_executable(&p) {
+               no_of_matches = 1;
                if let Some(path_to_display) = p.file_name().and_then(|n| n.to_str()) {
                   vec_to_be_returned.push(Pair {
                      display: path_to_display.to_string(),
@@ -173,6 +174,13 @@ impl Completer for TabCompleter {
                   });
                }
             }
+         }
+      }
+      /*press bell / autocomplete*/
+      if tab_cnt == 1 {
+         if no_of_matches > 1 {
+            print!("\x07");
+            io::stdout().flush().unwrap();
          }
       }
 
