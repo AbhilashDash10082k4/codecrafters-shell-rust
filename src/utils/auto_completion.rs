@@ -148,7 +148,7 @@ impl Completer for TabCompleter {
             vec_to_be_returned.clear();
             self.tab_cnt.set(0); // Reset for next command
          }
-      } else if count_files <= 1 && tab_cnt == 1 {
+      } else if count_files== 1 && tab_cnt == 1 {
          vec_to_be_returned.push(Pair {
             display: file_names[0].to_string(),
             replacement: format!("{}", file_names[0].to_string()),
@@ -174,7 +174,7 @@ impl Completer for TabCompleter {
             vec_to_be_returned.clear();
             self.tab_cnt.set(0); // Reset for next command
          }
-      } else if count_builtins <= 1 && tab_cnt == 1 {
+      } else if count_builtins == 1 && tab_cnt == 1 {
          vec_to_be_returned.push(Pair {
             display: matched_builtins[0].to_string(),
             replacement: format!("{}", matched_builtins[0].to_string()),
@@ -204,7 +204,7 @@ impl Completer for TabCompleter {
             vec_to_be_returned.clear();
             self.tab_cnt.set(0); // Reset for next command
          }
-      } else if count_executables <= 1 && tab_cnt == 1 {
+      } else if count_executables == 1 && tab_cnt == 1 {
          vec_to_be_returned.push(Pair {
             display: matched_executable_as_string[0].to_string(),
             replacement: format!("{}", matched_executable_as_string[0].to_string()),
