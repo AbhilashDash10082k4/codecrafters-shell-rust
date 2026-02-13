@@ -3,7 +3,7 @@ use crate::{
    commands::command::UserInput,
    utils::{auto_completion::TabCompleter, cmnd_parser, execute_file},
 };
-use rustyline::{CompletionType, Config, Editor, history::FileHistory};
+use rustyline::{Config, Editor, history::FileHistory};
 use std::{
    cell::Cell,
    io::{self, Write},

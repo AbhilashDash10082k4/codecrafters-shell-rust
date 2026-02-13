@@ -147,6 +147,7 @@ impl Completer for TabCompleter {
             // Return empty - don't show rustyline's list
             vec_to_be_returned.clear();
             self.tab_cnt.set(0); // Reset for next command
+            return Ok((start, vec![]));
          }
       }
       // builtins-for complete commands
