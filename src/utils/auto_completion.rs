@@ -1,7 +1,6 @@
 use crate::utils::path::{find_completions, find_executable, is_executable};
 use rustyline::{
-   Context, Helper,
-   completion::{Completer, Pair},
+   Context, Helper,completion::{Completer, Pair},
    highlight::Highlighter,
    hint::Hinter,
    validate::Validator,
@@ -111,79 +110,106 @@ impl Completer for TabCompleter {
       /*CORE LOGIC-
       1match-> Autocomplete on first TAB press
       many matches->  Ring Bell on 1st TAB and then list all the matches*/
-      let mut no_of_matches = 0;
       let builtins = ["echo", "exit"];
 
-      // Increment tab count and get current value
-      let tab_cnt = self.tab_cnt.get() + 1; //.get -> returns copy of current val
-      self.tab_cnt.set(tab_cnt); //Cell.set -> updates the old val with the curr val, drops the old val and nothing is returned
       /*start of the concerned word
       -line[..pos]=line before the cursor(currently typed line)
       -rfind -to return Option(idx) of the last space just before the cursor to find the word to replace
       -map(|i|i+1) = takes the idx returned in Some(idx) and +1 to find the char next to last space(the first char of the word to be autocompleted)
       -if no such idx exists -start from 0
       */
-
       let start = line[0..pos].rfind(' ').map(|i| i + 1).unwrap_or(0);
+
+      // Increment tab count and get current value
+      let tab_cnt = self.tab_cnt.get() + 1; //.get -> returns copy of current val
+      self.tab_cnt.set(tab_cnt);
+      //Cell.set -> updates the old val with the curr val, drops the old val and nothing is returned
 
       let prefix = &line[start..pos];
       let mut vec_to_be_returned: Vec<Pair> = vec![];
 
-      /*compare the file with the last elem of prefix after splitting/using components*/
-      let list_paths = find_completions(&prefix); //gives sorted list of file paths
-      no_of_matches += list_paths.len();
-      if tab_cnt == 2 && no_of_matches > 1{
-         if !list_paths.is_empty() {
-            let mut file_names: Vec<_> = list_paths
-               .iter()
-               .filter_map(|f| f.file_name().and_then(|n| n.to_str()))
-               .collect();
-            file_names.sort();
-
-            // Manually print the list
-            let file_list_as_string = file_names.join("  ");
-            println!("\n{}", file_list_as_string);
-
-            // Return empty - don't show rustyline's list
-            vec_to_be_returned.clear();
-            self.tab_cnt.set(0); // Reset for next command
-            
-            return Ok((start, vec![]));
-         }
-      } else {
-         // builtins-for complete commands
-         for builtin in builtins {
-            if builtin.starts_with(prefix) {
-               no_of_matches = 1;
-               vec_to_be_returned.push(Pair {
-                  display: builtin.to_string(),
-                  replacement: format!("{builtin} "),
-               })
-            }
-         }
-
-         //autocompletion for executable (for complete commands)-
-         let complete_executable_path = find_executable(&prefix);
-         if let Some(p) = complete_executable_path {
-            if p.is_file() && is_executable(&p) {
-               no_of_matches = 1;
-               if let Some(path_to_display) = p.file_name().and_then(|n| n.to_str()) {
-                  vec_to_be_returned.push(Pair {
-                     display: path_to_display.to_string(),
-                     replacement: format!("{path_to_display} "),
-                  });
-               }
-            }
-         }
-      }
-      /*press bell / autocomplete*/
-      if tab_cnt == 1 {
-         if no_of_matches > 1 {
+      /*all the matches in all possible cases*/
+      /*1.matches with incomplete cmnd*/
+      let list_paths = find_completions(&prefix);
+      let mut file_names: Vec<_> = list_paths
+         .iter()
+         .filter_map(|f| f.file_name().and_then(|n| n.to_str()))
+         .collect();
+      file_names.sort();
+      let count_files = file_names.len();
+      if count_files > 1 {
+         if tab_cnt == 1 {
             print!("\x07");
             io::stdout().flush().unwrap();
          }
+         if tab_cnt == 2 {
+            let file_list_as_string = file_names.join("  ");
+            println!("\n{}", file_list_as_string);
+            vec_to_be_returned.clear();
+            self.tab_cnt.set(0); // Reset for next command
+         }
+      } else if count_files <= 1 && tab_cnt == 1 {
+         vec_to_be_returned.push(Pair {
+            display: file_names[0].to_string(),
+            replacement: format!("{}", file_names[0].to_string()),
+         })
       }
 
+      /*2. matches with builtins*/
+      let mut matched_builtins = vec![];
+      for cmnd in builtins {
+         if cmnd.starts_with(prefix) {
+            matched_builtins.push(cmnd);
+         }
+      }
+      let count_builtins = matched_builtins.len();
+      if count_builtins > 1 {
+         if tab_cnt == 1 {
+            print!("\x07");
+            io::stdout().flush().unwrap();
+         }
+         if tab_cnt == 2 {
+            let matched_builtins_as_string = matched_builtins.join("  ");
+            println!("\n{}", matched_builtins_as_string);
+            vec_to_be_returned.clear();
+            self.tab_cnt.set(0); // Reset for next command
+         }
+      } else if count_builtins <= 1 && tab_cnt == 1 {
+         vec_to_be_returned.push(Pair {
+            display: matched_builtins[0].to_string(),
+            replacement: format!("{}", matched_builtins[0].to_string()),
+         })
+      }
+
+      /*3. match with executables*/
+      let mut matched_executable = vec![];
+      let complete_executable_path = find_executable(&prefix);
+      if let Some(p) = complete_executable_path {
+         if p.is_file() && is_executable(&p) {
+            matched_executable.push(p);
+         }
+      }
+      let matched_executable_as_string: Vec<&str> = matched_executable
+         .iter()
+         .filter_map(|n| n.file_name().and_then(|f| f.to_str()))
+         .collect();
+      let count_executables = matched_executable_as_string.len();
+      if count_executables > 1 {
+         if tab_cnt == 1 {
+            print!("\x07");
+            io::stdout().flush().unwrap();
+         }
+         if tab_cnt == 2 {
+            println!("\n{:?}", matched_executable_as_string);
+            vec_to_be_returned.clear();
+            self.tab_cnt.set(0); // Reset for next command
+         }
+      } else if count_executables <= 1 && tab_cnt == 1 {
+         vec_to_be_returned.push(Pair {
+            display: matched_executable_as_string[0].to_string(),
+            replacement: format!("{}", matched_executable_as_string[0].to_string()),
+         })
+      }
       Ok((start, vec_to_be_returned))
    }
 }
