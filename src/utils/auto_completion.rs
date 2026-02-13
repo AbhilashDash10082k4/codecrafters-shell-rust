@@ -141,12 +141,11 @@ impl Completer for TabCompleter {
                .filter_map(|f| f.file_name().and_then(|n| n.to_str()))
                .collect();
             file_names.sort();
-            for file_name in file_names {
-               vec_to_be_returned.push(Pair {
-                  display: file_name.to_string(),
-                  replacement: format!("{file_name} "),
-               });
-            }
+            // Manually print the list
+            let file_list_as_string = file_names.join("  ");
+            println!("{} ", file_list_as_string);
+            // Return empty - don't show rustyline's list
+            vec_to_be_returned.clear();
             self.tab_cnt.set(0); // Reset for next command
          }
       }
@@ -159,15 +158,6 @@ impl Completer for TabCompleter {
             })
          }
       }
-      // let matches: Vec<Pair> = builtins
-      //    .iter()
-      //    .filter(|b| b.starts_with(prefix))
-      //    .map(|b| Pair {
-      //       display: b.to_string(),
-      //       replacement: format!("{b} "),
-      //    })
-      //    .collect();
-      // vec_to_be_returned = matches;
 
       //autocompletion for executable (for complete commands)-
       let complete_executable_path = find_executable(&prefix);
@@ -182,6 +172,6 @@ impl Completer for TabCompleter {
          }
       }
 
-      Ok((start, vec_to_be_returned))
+      Ok((start, vec![]))
    }
 }
