@@ -1,6 +1,7 @@
 use crate::utils::path::{find_completions, find_executable, is_executable};
 use rustyline::{
-   Context, Helper,completion::{Completer, Pair},
+   Context, Helper,
+   completion::{Completer, Pair},
    highlight::Highlighter,
    hint::Hinter,
    validate::Validator,
@@ -137,6 +138,7 @@ impl Completer for TabCompleter {
          .collect();
       file_names.sort();
       let count_files = file_names.len();
+
       if count_files > 1 {
          if tab_cnt == 1 {
             print!("\x07");
@@ -150,10 +152,10 @@ impl Completer for TabCompleter {
             vec_to_be_returned.clear();
             self.tab_cnt.set(0); // Reset for next command
          }
-      } else if count_files== 1 && tab_cnt == 1 {
+      } else if count_files == 1 && tab_cnt == 1 {
          vec_to_be_returned.push(Pair {
             display: file_names[0].to_string(),
-            replacement: format!("{}", file_names[0].to_string()),
+            replacement: format!("{} ", file_names[0].to_string()),
          })
       }
 
@@ -181,7 +183,7 @@ impl Completer for TabCompleter {
       } else if count_builtins == 1 && tab_cnt == 1 {
          vec_to_be_returned.push(Pair {
             display: matched_builtins[0].to_string(),
-            replacement: format!("{}", matched_builtins[0].to_string()),
+            replacement: format!("{} ", matched_builtins[0].to_string()),
          })
       }
 
@@ -213,30 +215,32 @@ impl Completer for TabCompleter {
       } else if count_executables == 1 && tab_cnt == 1 {
          vec_to_be_returned.push(Pair {
             display: matched_executable_as_string[0].to_string(),
-            replacement: format!("{}", matched_executable_as_string[0].to_string()),
+            replacement: format!("{} ", matched_executable_as_string[0].to_string()),
          })
       }
       Ok((start, vec_to_be_returned))
    }
 }
-// fn autocomplete (tab_cnt:usize,matches: Vec<String>) {
-//    let matches_len = matches.len();
-//    let mut vec_to_be_returned = vec![];
-//    if matches_len > 1 {
-//          if tab_cnt == 1 {
-//             print!("\x07");
-//             io::stdout().flush().unwrap();
-//          }
-//          if tab_cnt == 2 {
-//             println!("\n{:?}", matches);
-//             vec_to_be_returned.clear();
-//             self.tab_cnt.set(0); // Reset for next command
-//          }
-//       } else if matches_len == 1 && tab_cnt == 1 {
-//          vec_to_be_returned.push(Pair {
-//             display: matches[0].to_string(),
-//             replacement: format!("{}", matches[0].to_string()),
-//          })
-
-//       }
-// }
+fn autocomplete(prefix:&str, tab_cnt: Cell<usize>, matches: Vec<&str>) {
+   // let tab_cnt = tab_cnt.get();
+   let matches_len = matches.len();
+   let mut vec_to_be_returned = vec![];
+   if matches_len > 1 {
+      if tab_cnt.get() == 1 {
+         print!("\x07");
+         io::stdout().flush().unwrap();
+      }
+      if tab_cnt.get() == 2 {
+         println!("\n{}", matches.join(" "));
+         print!("$ {}", prefix);
+         io::stdout().flush().unwrap();
+         vec_to_be_returned.clear();
+         tab_cnt.set(0); // Reset for next command
+      }
+   } else if matches_len == 1 && tab_cnt.get() == 1 {
+      vec_to_be_returned.push(Pair {
+         display: matches[0].to_string(),
+         replacement: format!("{}", matches[0].to_string()),
+      })
+   }
+}
