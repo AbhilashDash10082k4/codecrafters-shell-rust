@@ -182,10 +182,14 @@ fn autocomplete(prefix: &str, tab_cnt: &Cell<usize>, matches: Vec<&str>) -> Vec<
       //    io::stdout().flush().unwrap();
       // }
       if tab_cnt_val == 1 {
-         println!("\n{}", lcp.display());
-         print!("$ {}", prefix);
-         io::stdout().flush().unwrap();
-         vec_to_be_returned.clear();
+         // println!("\n{}", lcp.display());
+         // print!("$ {}", prefix);
+         // io::stdout().flush().unwrap();
+         // vec_to_be_returned.clear();
+         vec_to_be_returned.push(Pair {
+         display: lcp.to_string(),
+         replacement: format!("{} ", lcp),
+      });
          tab_cnt.set(0); // Reset for next command
       }
    } else if matches_len == 1 && tab_cnt_val == 1 {
