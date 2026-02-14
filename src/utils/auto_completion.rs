@@ -1,13 +1,13 @@
 use crate::utils::path::{find_completions, find_executable, is_executable};
 use rustyline::{
    Context, Helper,
-   completion::{Completer, Pair},
+   completion::{Candidate, Completer, Pair},
    highlight::Highlighter,
    hint::Hinter,
    validate::Validator,
 };
-use std::cell::Cell;
 use std::io::{self, Write};
+use std::{cell::Cell, os::raw::c_char};
 
 /*tabcompleter lives across calls*/
 /*ingredients for stage 29-
@@ -121,13 +121,8 @@ impl Completer for TabCompleter {
       */
       let start = line[0..pos].rfind(' ').map(|i| i + 1).unwrap_or(0);
 
-      // Increment tab count and get current value
-      let tab_cnt = self.tab_cnt.get() + 1; //.get -> returns copy of current val
-      self.tab_cnt.set(tab_cnt);
-      //Cell.set -> updates the old val with the curr val, drops the old val and nothing is returned
-
       let prefix = &line[start..pos];
-      let mut vec_to_be_returned: Vec<Pair> = vec![];
+      let mut vec_to_be_returned = vec![];
 
       /*all the matches in all possible cases*/
       /*1.matches with incomplete cmnd*/
@@ -137,26 +132,8 @@ impl Completer for TabCompleter {
          .filter_map(|f| f.file_name().and_then(|n| n.to_str()))
          .collect();
       file_names.sort();
-      let count_files = file_names.len();
-
-      if count_files > 1 {
-         if tab_cnt == 1 {
-            print!("\x07");
-            io::stdout().flush().unwrap();
-         }
-         if tab_cnt == 2 {
-            let file_list_as_string = file_names.join("  ");
-            println!("\n{}", file_list_as_string);
-            print!("$ {}", prefix);
-            io::stdout().flush().unwrap();
-            vec_to_be_returned.clear();
-            self.tab_cnt.set(0); // Reset for next command
-         }
-      } else if count_files == 1 && tab_cnt == 1 {
-         vec_to_be_returned.push(Pair {
-            display: file_names[0].to_string(),
-            replacement: format!("{} ", file_names[0].to_string()),
-         })
+      if !file_names.is_empty() {
+         vec_to_be_returned = autocomplete(prefix, &self.tab_cnt, file_names);
       }
 
       /*2. matches with builtins*/
@@ -166,25 +143,8 @@ impl Completer for TabCompleter {
             matched_builtins.push(cmnd);
          }
       }
-      let count_builtins = matched_builtins.len();
-      if count_builtins > 1 {
-         if tab_cnt == 1 {
-            print!("\x07");
-            io::stdout().flush().unwrap();
-         }
-         if tab_cnt == 2 {
-            let matched_builtins_as_string = matched_builtins.join("  ");
-            println!("\n{}", matched_builtins_as_string);
-            print!("$ {}", prefix);
-            io::stdout().flush().unwrap();
-            vec_to_be_returned.clear();
-            self.tab_cnt.set(0); // Reset for next command
-         }
-      } else if count_builtins == 1 && tab_cnt == 1 {
-         vec_to_be_returned.push(Pair {
-            display: matched_builtins[0].to_string(),
-            replacement: format!("{} ", matched_builtins[0].to_string()),
-         })
+      if !matched_builtins.is_empty() {
+         vec_to_be_returned = autocomplete(prefix, &self.tab_cnt, matched_builtins);
       }
 
       /*3. match with executables*/
@@ -199,48 +159,61 @@ impl Completer for TabCompleter {
          .iter()
          .filter_map(|n| n.file_name().and_then(|f| f.to_str()))
          .collect();
-      let count_executables = matched_executable_as_string.len();
-      if count_executables > 1 {
-         if tab_cnt == 1 {
-            print!("\x07");
-            io::stdout().flush().unwrap();
-         }
-         if tab_cnt == 2 {
-            println!("\n{}", matched_executable_as_string.join("  "));
-            print!("$ {}", prefix);
-            io::stdout().flush().unwrap();
-            vec_to_be_returned.clear();
-            self.tab_cnt.set(0); // Reset for next command
-         }
-      } else if count_executables == 1 && tab_cnt == 1 {
-         vec_to_be_returned.push(Pair {
-            display: matched_executable_as_string[0].to_string(),
-            replacement: format!("{} ", matched_executable_as_string[0].to_string()),
-         })
+      if !matched_executable_as_string.is_empty() {
+         vec_to_be_returned = autocomplete(prefix, &self.tab_cnt, matched_executable_as_string);
       }
+
       Ok((start, vec_to_be_returned))
    }
 }
-fn autocomplete(prefix:&str, tab_cnt: Cell<usize>, matches: Vec<&str>) {
-   // let tab_cnt = tab_cnt.get();
+fn autocomplete(prefix: &str, tab_cnt: &Cell<usize>, matches: Vec<&str>) -> Vec<Pair> {
+   // Increment tab count and get current value
+   let tab_cnt_val = tab_cnt.get() + 1; //.get -> returns copy of current val
+   tab_cnt.set(tab_cnt_val);
+   //Cell.set -> updates the old val with the curr val, drops the old val and nothing is returned
+
    let matches_len = matches.len();
    let mut vec_to_be_returned = vec![];
+   let lcp = longest_prefix_by_char_match(&matches);
    if matches_len > 1 {
-      if tab_cnt.get() == 1 {
+      if tab_cnt_val == 1 {
          print!("\x07");
          io::stdout().flush().unwrap();
       }
-      if tab_cnt.get() == 2 {
-         println!("\n{}", matches.join(" "));
+      if tab_cnt_val == 2 {
+         println!("\n{}", lcp.display());
          print!("$ {}", prefix);
          io::stdout().flush().unwrap();
          vec_to_be_returned.clear();
          tab_cnt.set(0); // Reset for next command
       }
-   } else if matches_len == 1 && tab_cnt.get() == 1 {
+   } else if matches_len == 1 && tab_cnt_val == 1 {
       vec_to_be_returned.push(Pair {
          display: matches[0].to_string(),
          replacement: format!("{}", matches[0].to_string()),
       })
    }
+   vec_to_be_returned
+}
+fn longest_prefix_by_char_match(items: &Vec<&str>) -> String {
+   let mut smallest_word_len = items[0].len();
+   for item in items {
+      smallest_word_len = smallest_word_len.min(item.len());
+   }
+   let res: Vec<String> = vec![];
+   let mut char_to_compare = items[0].chars();
+   for i in 0..smallest_word_len {
+      if let Some(ch) = char_to_compare.nth(i) {
+         for item in items {
+            let item_to_compare = item.chars().nth(i);
+            if let Some(c) = item_to_compare {
+               if ch != c {
+                  res.join("");
+               }
+            }
+         }
+         res.join(ch.to_string().as_str());
+      }
+   }
+   return res.join("");
 }
