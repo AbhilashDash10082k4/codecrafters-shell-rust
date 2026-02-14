@@ -175,12 +175,13 @@ fn autocomplete(prefix: &str, tab_cnt: &Cell<usize>, matches: Vec<&str>) -> Vec<
    let matches_len = matches.len();
    let mut vec_to_be_returned = vec![];
    let lcp = longest_prefix_by_char_match(&matches);
+
    if matches_len > 1 {
+      // if tab_cnt_val == 1 {
+      //    print!("\x07");
+      //    io::stdout().flush().unwrap();
+      // }
       if tab_cnt_val == 1 {
-         print!("\x07");
-         io::stdout().flush().unwrap();
-      }
-      if tab_cnt_val == 2 {
          println!("\n{}", lcp.display());
          print!("$ {}", prefix);
          io::stdout().flush().unwrap();
@@ -190,7 +191,7 @@ fn autocomplete(prefix: &str, tab_cnt: &Cell<usize>, matches: Vec<&str>) -> Vec<
    } else if matches_len == 1 && tab_cnt_val == 1 {
       vec_to_be_returned.push(Pair {
          display: matches[0].to_string(),
-         replacement: format!("{}", matches[0].to_string()),
+         replacement: format!("{} ", matches[0].to_string()),
       })
    }
    vec_to_be_returned
