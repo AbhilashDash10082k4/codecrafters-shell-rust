@@ -160,7 +160,7 @@ impl Completer for TabCompleter {
          if tab_cnt == 2 {
             let matched_builtins_as_string = matched_builtins.join("  ");
             println!("\n{}", matched_builtins_as_string);
-            print!("$ {}", prefix);
+            print!("$ {} ", prefix);
             io::stdout().flush().unwrap();
             vec_to_be_returned.clear();
             self.tab_cnt.set(0); // Reset for next command
@@ -236,7 +236,7 @@ fn autocomplete(prefix: &str, tab_cnt: &Cell<usize>, matches: Vec<&str>) -> Vec<
             io::stdout().flush().unwrap()
          } else if tab_cnt.get() == 2 {
             println!("\n{}", matches.join("  "));
-            println!("$ {}", prefix);
+            println!("$ {} ", prefix);
             tab_cnt.set(0);
          }
       }
