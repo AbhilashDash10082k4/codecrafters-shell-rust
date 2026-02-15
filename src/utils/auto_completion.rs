@@ -134,8 +134,19 @@ impl Completer for TabCompleter {
       }
       let mut vec_to_be_returned: Vec<Pair> = vec![];
 
-      /*all the matches in all possible cases*/
-      /*1.matches with incomplete cmnd*/
+      /*all the matches in all possible cases -priority-builtins > PATH*/
+      /*1. matches with builtins*/
+      let mut matched_builtins = vec![];
+      for cmnd in builtins {
+         if cmnd.starts_with(prefix) {
+            matched_builtins.push(cmnd);
+         }
+      }
+      if !matched_builtins.is_empty() {
+         vec_to_be_returned = autocomplete(prefix, &self.tab_cnt, matched_builtins);
+         return Ok((start,vec_to_be_returned));
+      }
+      /*2.matches with incomplete cmnd*/
       let list_paths = find_completions(&prefix);
       let mut file_names: Vec<_> = list_paths
          .iter()
@@ -144,33 +155,6 @@ impl Completer for TabCompleter {
       file_names.sort();
       vec_to_be_returned = autocomplete(prefix, &self.tab_cnt, file_names);
 
-      /*2. matches with builtins*/
-      let mut matched_builtins = vec![];
-      for cmnd in builtins {
-         if cmnd.starts_with(prefix) {
-            matched_builtins.push(cmnd);
-         }
-      }
-      let count_builtins = matched_builtins.len();
-      if count_builtins > 1 {
-         if tab_cnt == 1 {
-            print!("\x07");
-            io::stdout().flush().unwrap();
-         }
-         if tab_cnt == 2 {
-            let matched_builtins_as_string = matched_builtins.join("  ");
-            println!("\n{}", matched_builtins_as_string);
-            print!("$ {} ", prefix);
-            io::stdout().flush().unwrap();
-            vec_to_be_returned.clear();
-            self.tab_cnt.set(0); // Reset for next command
-         }
-      } else if count_builtins == 1 && tab_cnt == 1 {
-         vec_to_be_returned.push(Pair {
-            display: matched_builtins[0].to_string(),
-            replacement: format!("{} ", matched_builtins[0].to_string()),
-         })
-      }
 
       /*3. match with executables*/
       // let mut matched_executable = vec![];
@@ -226,7 +210,7 @@ fn autocomplete(prefix: &str, tab_cnt: &Cell<usize>, matches: Vec<&str>) -> Vec<
          //tab is making progress
          vec_to_be_returned.push(Pair {
             display: lcp.to_string(),
-            replacement: format!("{} ", lcp),
+            replacement: format!("{}", lcp),
          });
          tab_cnt.set(0);
       } else if lcp.len() == prefix.len() {
@@ -236,7 +220,7 @@ fn autocomplete(prefix: &str, tab_cnt: &Cell<usize>, matches: Vec<&str>) -> Vec<
             io::stdout().flush().unwrap()
          } else if tab_cnt.get() == 2 {
             println!("\n{}", matches.join("  "));
-            println!("$ {} ", prefix);
+            println!("$ {}", prefix);
             tab_cnt.set(0);
          }
       }
