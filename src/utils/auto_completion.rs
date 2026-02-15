@@ -235,7 +235,7 @@ fn autocomplete(prefix: &str, tab_cnt: &Cell<usize>, matches: Vec<&str>) -> Vec<
             print!("\x07");
             io::stdout().flush().unwrap()
          } else if tab_cnt.get() == 2 {
-            println!("\n{}", matches.join(" "));
+            println!("\n{}", matches.join("  "));
             println!("{}", prefix);
             tab_cnt.set(0);
          }
