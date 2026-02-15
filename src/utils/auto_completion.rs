@@ -1,13 +1,15 @@
 use crate::utils::path::{find_completions, find_executable, is_executable};
 use rustyline::{
    Context, Helper,
-   completion::{Candidate, Completer, Pair},
+   completion::{Completer, Pair},
    highlight::Highlighter,
    hint::Hinter,
    validate::Validator,
 };
-use std::io::{self, Write};
-use std::{cell::Cell, os::raw::c_char};
+use std::{
+   cell::Cell,
+   io::{self, Write},
+};
 
 /*tabcompleter lives across calls*/
 /*ingredients for stage 29-
@@ -121,8 +123,16 @@ impl Completer for TabCompleter {
       */
       let start = line[0..pos].rfind(' ').map(|i| i + 1).unwrap_or(0);
 
+      // Increment tab count and get current value
+      let tab_cnt = self.tab_cnt.get() + 1; //.get -> returns copy of current val
+      self.tab_cnt.set(tab_cnt);
+      //Cell.set -> updates the old val with the curr val, drops the old val and nothing is returned
+
       let prefix = &line[start..pos];
-      let mut vec_to_be_returned = vec![];
+      if prefix.is_empty() {
+         return Ok((start, Vec::new()));
+      }
+      let mut vec_to_be_returned: Vec<Pair> = vec![];
 
       /*all the matches in all possible cases*/
       /*1.matches with incomplete cmnd*/
@@ -132,9 +142,7 @@ impl Completer for TabCompleter {
          .filter_map(|f| f.file_name().and_then(|n| n.to_str()))
          .collect();
       file_names.sort();
-      if !file_names.is_empty() {
-         vec_to_be_returned = autocomplete(prefix, &self.tab_cnt, file_names);
-      }
+      vec_to_be_returned = autocomplete(prefix, &self.tab_cnt, file_names);
 
       /*2. matches with builtins*/
       let mut matched_builtins = vec![];
@@ -143,82 +151,115 @@ impl Completer for TabCompleter {
             matched_builtins.push(cmnd);
          }
       }
-      if !matched_builtins.is_empty() {
-         vec_to_be_returned = autocomplete(prefix, &self.tab_cnt, matched_builtins);
+      let count_builtins = matched_builtins.len();
+      if count_builtins > 1 {
+         if tab_cnt == 1 {
+            print!("\x07");
+            io::stdout().flush().unwrap();
+         }
+         if tab_cnt == 2 {
+            let matched_builtins_as_string = matched_builtins.join("  ");
+            println!("\n{}", matched_builtins_as_string);
+            print!("$ {}", prefix);
+            io::stdout().flush().unwrap();
+            vec_to_be_returned.clear();
+            self.tab_cnt.set(0); // Reset for next command
+         }
+      } else if count_builtins == 1 && tab_cnt == 1 {
+         vec_to_be_returned.push(Pair {
+            display: matched_builtins[0].to_string(),
+            replacement: format!("{} ", matched_builtins[0].to_string()),
+         })
       }
 
       /*3. match with executables*/
-      let mut matched_executable = vec![];
-      let complete_executable_path = find_executable(&prefix);
-      if let Some(p) = complete_executable_path {
-         if p.is_file() && is_executable(&p) {
-            matched_executable.push(p);
-         }
-      }
-      let matched_executable_as_string: Vec<&str> = matched_executable
-         .iter()
-         .filter_map(|n| n.file_name().and_then(|f| f.to_str()))
-         .collect();
-      if !matched_executable_as_string.is_empty() {
-         vec_to_be_returned = autocomplete(prefix, &self.tab_cnt, matched_executable_as_string);
-      }
-
+      // let mut matched_executable = vec![];
+      // let complete_executable_path = find_executable(&prefix);
+      // if let Some(p) = complete_executable_path {
+      //    if p.is_file() && is_executable(&p) {
+      //       matched_executable.push(p);
+      //    }
+      // }
+      // let matched_executable_as_string: Vec<&str> = matched_executable
+      //    .iter()
+      //    .filter_map(|n| n.file_name().and_then(|f| f.to_str()))
+      //    .collect();
+      // let count_executables = matched_executable_as_string.len();
+      // if count_executables > 1 {
+      //    if tab_cnt == 1 {
+      //       print!("\x07");
+      //       io::stdout().flush().unwrap();
+      //    }
+      //    if tab_cnt == 2 {
+      //       println!("\n{}", matched_executable_as_string.join("  "));
+      //       print!("$ {}", prefix);
+      //       io::stdout().flush().unwrap();
+      //       vec_to_be_returned.clear();
+      //       self.tab_cnt.set(0); // Reset for next command
+      //    }
+      // } else if count_executables == 1 && tab_cnt == 1 {
+      //    vec_to_be_returned.push(Pair {
+      //       display: matched_executable_as_string[0].to_string(),
+      //       replacement: format!("{} ", matched_executable_as_string[0].to_string()),
+      //    })
+      // }
       Ok((start, vec_to_be_returned))
    }
 }
 fn autocomplete(prefix: &str, tab_cnt: &Cell<usize>, matches: Vec<&str>) -> Vec<Pair> {
-   // Increment tab count and get current value
-   let tab_cnt_val = tab_cnt.get() + 1; //.get -> returns copy of current val
-   tab_cnt.set(tab_cnt_val);
    //Cell.set -> updates the old val with the curr val, drops the old val and nothing is returned
-
    let matches_len = matches.len();
+   if matches_len == 0 {
+      return Vec::new();
+   }
    let mut vec_to_be_returned = vec![];
-   let lcp = longest_prefix_by_char_match(&matches);
-
-   if matches_len > 1 {
-      // if tab_cnt_val == 1 {
-      //    print!("\x07");
-      //    io::stdout().flush().unwrap();
-      // }
-      if tab_cnt_val == 1 {
-         // println!("\n{}", lcp.display());
-         // print!("$ {}", prefix);
-         // io::stdout().flush().unwrap();
-         // vec_to_be_returned.clear();
-         vec_to_be_returned.push(Pair {
-         display: lcp.to_string(),
-         replacement: format!("{} ", lcp),
-      });
-         tab_cnt.set(0); // Reset for next command
-      }
-   } else if matches_len == 1 && tab_cnt_val == 1 {
+   if matches_len == 1 {
       vec_to_be_returned.push(Pair {
          display: matches[0].to_string(),
-         replacement: format!("{} ", matches[0].to_string()),
-      })
+         replacement: format!("{} ", matches[0]),
+      });
+   }
+
+   let lcp = longest_prefix_by_char_match(&matches);
+   if matches_len > 1 {
+      if lcp.len() > prefix.len() {
+         //tab is making progress
+         vec_to_be_returned.push(Pair {
+            display: lcp.to_string(),
+            replacement: format!("{}", lcp),
+         });
+         tab_cnt.set(0);
+      } else if lcp.len() == prefix.len() {
+         //tab is making no progress- continue with bell press
+         if tab_cnt.get() == 1 {
+            print!("\x07");
+            io::stdout().flush().unwrap()
+         } else if tab_cnt.get() == 2 {
+            println!("\n{}", matches.join(" "));
+            println!("{}", prefix);
+            tab_cnt.set(0);
+         }
+      }
    }
    vec_to_be_returned
 }
 fn longest_prefix_by_char_match(items: &Vec<&str>) -> String {
-   let mut smallest_word_len = items[0].len();
-   for item in items {
-      smallest_word_len = smallest_word_len.min(item.len());
+   if items.is_empty() {
+      return String::new();
    }
-   let res: Vec<String> = vec![];
-   let mut char_to_compare = items[0].chars();
-   for i in 0..smallest_word_len {
-      if let Some(ch) = char_to_compare.nth(i) {
+   let smallest_word_len = items.iter().map(|w| w.len()).min();
+   let mut res = String::new();
+   if let Some(l) = smallest_word_len {
+      for i in 0..l {
+         let first_item_chars = items[0].as_bytes()[i];
          for item in items {
-            let item_to_compare = item.chars().nth(i);
-            if let Some(c) = item_to_compare {
-               if ch != c {
-                  res.join("");
-               }
+            if item.as_bytes()[i] != first_item_chars {
+               return res;
             }
          }
-         res.join(ch.to_string().as_str());
+         res.push(char::from(first_item_chars))
       }
    }
-   return res.join("");
+
+   return res;
 }
