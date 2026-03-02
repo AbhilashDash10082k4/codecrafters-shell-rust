@@ -1,7 +1,7 @@
 use crate::{
    builtins::{cd, echo, exit, pwd, type_cmd},
    commands::command::UserInput,
-   utils::{auto_completion::TabCompleter, cmnd_parser, execute_file},
+   utils::{cmnd_parser, completion::tab_completion::TabCompleter, execute_file},
 };
 use rustyline::{Config, Editor, history::FileHistory};
 use std::{
