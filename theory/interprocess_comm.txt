@@ -1,0 +1,124 @@
+process -> 
+    ->execution of a file or running of a task -> maintained in a process table and is identified by PID(process identifier) and a parent PID(process id of a parent) -> created by some main process,
+    -> parent process either waits or runs simultaneously with child process
+    -> child either inherits data/resources from the parent process(share or partition) or gets directly from the OS
+fork -> 
+    -> creates a child process from a main/parent process
+    -> from the point where fork is called to the end, it will be considered as child proess and the parent and child proesses will both have the same logic to execute
+    -> pid is returned by fork -> if pid == 0 (child) , pid == 01 (unsuccessful fork), else parent process
+exec() -> used to execute different codes in parent and child processes
+    -> takes 2 args (file_path , arg) -> overlays the duplicate code with new code
+    -> exec family -> execvp, execv, execlp
+wait() -> makes the current process wait until the other process is completed
+exit() -> 
+    -> an api called after a process completes
+    -> child process termination by parent processes happens for 3 reasons-
+        -> excessive use of resources of parent by child which would cause resource deficiency for other children
+        -> parent terminates which results in termination all the other children(cascading termination)
+        -> tasks by child are no more needed
+    -> 
+zombie process -> 
+    -> a parent process runs after the child process completes. The completed child process returns it PID to the parent process and after recieving the PID the parent process runs further to completion
+    -> the parent process erases the child process from the process table upon recieving the PID of child after completion of child
+    -> if a parent process does not call wait and completes after the child completes, the child process is not erased from process table even after completion as the PID of child is not caught by parent as it does not have wait().
+    -> This is called as zombie process
+    -> this is prevented by auto termination of child process after termination of parent
+    -> the child process is faster
+orphan process ->
+    -> here the child completes after the parent process completes
+    -> the parent process is faster
+    -> adopted by higher level processes called init(PID = 1).This process takes care of clean up of child/orphan processes. This is called as Reparenting
+many zombies -> fill the  prcoess table
+many orphans -> overload init process
+
+fork bomb -> infinite forks without wait creating a lot of zombies
+
+file descriptors -> ranges from 0 to 255
+    -> 0- stdin(read): system reads a string to standard i/p,
+    -> 1- stdout(write):- system writes string to standard o/p,
+    -> 2- stderr:- system writes a string to standard o/p without storing it in buffer
+    -> found from PIDs. 
+    cmmnds -> 
+        -> ps -aux | grep <process_name>
+        -> ls -la /proc/PID/fd ==> gives file descriptor for known PID
+        -> ls -l /proc/$$/fd ==>gives the file descriptors used by a process for unknown PID
+        -> exec 7>&1 ==> this means that the file descriptor '7' is linked to stdout for further commands
+        -> exec 7>file.txt ==>  this means that the file descriptor linked to stdout is now linked to a file, so all the output of the command with FD==7 will be written to file.txt
+        -> ps -aux>&7 ==> this will list all the file descriptors used by current processes running and will output them to the file.txt
+        - > exec 7>&- ==> this deregisters the FD==7
+pipes- 
+    -> multiple commnd combination
+    -> o/p of 1st cmmnd(write end) = i/p of 2nd cmnd(read end)
+    -> cat file.txt | sort | uniq ==> this cmmnd sorts the data in a file and gives unique records
+    -> interprocess communication-
+    Reason of interprocess comm->
+    -> independent and cooperating processes(sharing of data in b/w processes)
+    -> information sharing- accessing info concurrently
+    -> computation speedup-> running a task as many subtasks and running all the tasks asyncly
+    -> modularity-> dividing the system into many modules
+    -> convenience -> running diff processes conveniently
+    -> P0 writes to P1. P0 writes to write end of file and P1 waits untill P0 has completed writing and takes i/p from read end of the pipe
+    -> fd(read) == 0,  fd(write) == 1
+
+Models of IPC(Inter Process Communication)- shared memory and msg passing
+    -> shared memory:- 
+        -> a region in memory shared by diff processes. To share info, the data is written/read from the shared memory location.
+        -> this mem region lies in the address of the Proc that created it
+        -> producer(produces info) and consumer(consumes info produced by producer) process. There has to be buffer of items for prod and consu ot work concurrently
+        -> produ fills the shared memo by buffer items and consu empties the memory
+        -> producer can produce 1item and consumer can consume an item at the same time. The prod and consu have to be synchronzied
+    types of buffer-
+        -> unbounded:- no limit on buffer produced. Consumer can wait but producer can go on producing buffer
+        -> bounded:- limit on buffer produced. Producer waits if mem is full and consum waits if buff is empty
+    -> msg passing:-
+        -> Proc1 sends info/data to kernel and then the kernel sends the data to Proc2
+        -> used by systems connected through a network
+        -> send/receive msg -> types of msg -> fixed size(sys lvl implemen is ez and programming is diffi) and variable (sys lvl implemen is diff and prog is easy)
+
+        -> direct msging:-
+            -> a commun link is present between processes -direct/indirect, sync/async, automatic/explicit
+            -> issues- naming, synchronization, buffering
+                -> direct/indirect: naming(a process in which processes identify each other)
+                -> only 2 processes have a link in between them, and a link is established automatically when the processes know each other's identity
+            another variant-> the sender only knows the identity of the receiver and not vice versa (asymmetric)
+                -> send (P, message) == send msg to recipient P
+                -> recieve (id, msg) == recieve msg from any process(given by the var "id")
+            -> disadvantage of both the schemes(symm & asymm) == limited modularity(changing name of a process will lead to examination of other processes).
+        -> indirect msging -> msg is dumped in and recieved from a mailbox(port)
+            -> mailbox has its own id, is shared b/w processes
+            -> send (A, msg); receive(A, msg) -> send and receive msg from mailbox A
+            -> a comm link is established if only processes have a shared mailbox
+            -> comm link is associated to many processes
+            -> b/w a pair of processes there may be many links each associated with a shared mailboxo
+        -> P1 sends msg to mailbox and P2 & P3 both execute receive() on the mailbox. So, the msg is received according to these conditions (system decides the follwing) -
+            -> processes are selcted arbitrarily to receive msg based on some algo(round robin)
+            -> a link is allowed to be associated with 2 processes at max
+            -> allow at most 1 process at a time to execute receive
+        -> mailbox has a owner (either a process or by OS)
+
+        -> Sync/Async msging
+        -> Synchronous msging:-
+            -> blocking/non-blocking or sync/async:- methods of establishing comm links(send() & receive() primitives) b/w processes for msg passing
+            -> Blocking send:- sending process is blocked untill the previously sent msg is received
+            -> Non-Blocking send:- sending process is not blocked and resume process after sending the msg
+
+            -> Blocking receiver:- the receiving process is blocked untill there is a msg available to get received
+            -> Non-blocking receiver:- the receiver either retrieves a valid msg or a null
+
+        -> Buffering:-
+            -> this is the queue in which msgs stay after being sent and before being received by processes
+            -> Types:-
+                -> Zero capacity:- no capacity for msg storing, sender has to block untill the msg is received
+                -> Bounded capacity:- sender waits after the queue is full, the queue has some size to store the msgs
+                -> Unbounded capacity:- sender is never blocked, any number of msgs can wait in queue
+
+dup & dup2():- takes in file descriptor as argument and returns new file descriptor
+    -> points to same resource
+    -> the new file descriptor is the lowest available descriptor
+    -> terminal takes std i/p (fd == 0) from keyboard and gives o/p on screen(fd == 1). If we want the terminal to take i/p from a file and give o/p to a file, the file descriptors have to be manipulated accordingly. This is done by dup/dup2()
+    
+    to take i/p from a file-
+        -> stdin is pointed to the lowest fd after 0,1 and 2 i.e 3
+        -> since the sys takes i/p from fd == 0, the file is made to point to fd == 0
+    -> dup2 is used to reassign the changed fd to its original fd, undo the changes
+    

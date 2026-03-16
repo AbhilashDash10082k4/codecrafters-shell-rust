@@ -2,6 +2,8 @@ use std::{
    fs::File,
    process::{Command, Stdio},
 };
+
+use crate::utils::dual_cmmnd_pipeline::pipeline;
 /*Work of this block -take an executable file and handles it to the terminal -basically start a program
 - Command::new -prepares the file to be executed , takes in the name of the program and not the entire file path
 - args -takes the extra arguments provided by the user
@@ -23,8 +25,10 @@ pub fn handle(program_name: &str, args: &Vec<String>) {
    if args.is_empty() {
       return;
    }
+   if args.contains(&"|".to_string()) {
+      pipeline::handle(args);
+   }
    let mut file_name = None;
-   // let op_idx = args.iter().position(|r| r == ">").expect("Err");
    let mut cmnd_args = Vec::new();
    let mut i = 1;
    let mut output_redirect_char: Option<&str> = None;
@@ -91,28 +95,3 @@ pub fn handle(program_name: &str, args: &Vec<String>) {
       let _ = c.wait();
    }
 }
-/*stage23 ref -
-let mut buffer = File::create("foo.txt")?;
-buffer.write_all(b"some bytes")?;
-io::stdout().write_all(b"hello world")?;
-
-let output = Command::new("/bin/cat")
-    .arg("file.txt")
-    .output()?;
-
-println!("status: {}", output.status);
-io::stdout().write_all(&output.stdout)?;
-io::stderr().write_all(&output.stderr)?;
-
-let mut child = Command::new("rev")
-    .stdin(Stdio::piped())
-    .stdout(Stdio::piped())
-    .spawn()
-    .expect("Failed to spawn child process");
-
-let mut stdin = child.stdin.take().expect("Failed to open stdin");
-std::thread::spawn(move || {
-    stdin.write_all("Hello, world!".as_bytes()).expect("Failed to write to stdin");
-});
-
-let output = child.wait_with_output().expect("Failed to read stdout")*/
