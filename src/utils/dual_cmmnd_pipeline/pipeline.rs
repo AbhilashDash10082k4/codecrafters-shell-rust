@@ -6,7 +6,7 @@ pub fn handle(user_input: &[String]) {
    if user_input.contains(&pipe_symbol) {
       if let Some(pipe_idx) = user_input.iter().position(|p| p == &pipe_symbol) {
          let elems_before_pipe = &user_input[0..pipe_idx];
-         let elems_after_pipe = &user_input[pipe_idx + 1..user_input.len()];
+         let elems_after_pipe = &user_input[pipe_idx + 1..];
 
          spawn_processes(elems_before_pipe, elems_after_pipe);
       }
