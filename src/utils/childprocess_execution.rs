@@ -27,6 +27,7 @@ pub fn handle(program_name: &str, args: &Vec<String>) {
    }
    if args.contains(&"|".to_string()) {
       pipeline::handle(args);
+      return; //if not returned, it will execute the further code which will lead to error
    }
    let mut file_name = None;
    let mut cmnd_args = Vec::new();

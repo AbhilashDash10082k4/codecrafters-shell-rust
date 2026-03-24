@@ -1,5 +1,5 @@
-use std::io::pipe;
-use std::process::Command;
+use std::io::{self, pipe};
+use std::process::{Command, Stdio};
 pub fn handle(user_input: &[String]) {
    let pipe_symbol = "|".to_string();
 
@@ -22,27 +22,30 @@ fn spawn_processes(cmd1: &[String], cmd2: &[String]) {
       if cmd1.len() >= 2 {
          child1.args(&cmd1[1..]);
       }
-      child1.stdout(writer);
+      child1.stdout(Stdio::from(writer));
 
       let mut child2 = Command::new(&cmd2[0]);
       if cmd2.len() >= 2 {
          child2.args(&cmd2[1..]);
       }
-      child2.stdin(reader);
-
+      child2.stdin(Stdio::from(reader));
+      // println!("cmd1: {:?}", cmd1);
+      // println!("cmd2: {:?}", cmd2);
       let c1 = child1.spawn();
       let c2 = child2.spawn();
+      
       match c1 {
          Ok(mut c) => {
             let _ = c.wait();
          }
-         _ => {}
-      }
-      match c2 { 
-         Ok(mut c) => {
-            let _ = c.wait();
+         _ => {
+            match c2 {
+               Ok(mut c) => {
+                  let _ = c.wait();
+               }
+               _=>{}
+            }
          }
-         _=>{}
       }
    }
 }
