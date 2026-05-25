@@ -1,4 +1,4 @@
-use crate::utils::{completion::auto_complete::autocomplete, path::find_completions};
+use crate::{builtins::builtins::BUILTINS, utils::{completion::auto_complete::autocomplete, path::find_completions}};
 use rustyline::{
    Context, Helper,
    completion::{Completer, Pair},
@@ -89,7 +89,7 @@ refs -KeyCode,
     - safe for memory operations
 -Pair- display(suggestions to user),replace(actual replacement of og text -includes trailing space)
 -separation of concerns-
-    -Rustyline-(cursor pos, terminbal cntrl, i/p buffer)
+    -Rustyline-(cursor pos, terminal cntrl, i/p buffer)
     -Me- (completion logic, replacement text)
 -Automcomplete -buffer replacement
 -builtins -[&static str;2]->
@@ -112,7 +112,7 @@ impl Completer for TabCompleter {
       /*CORE LOGIC-
       1match-> Autocomplete on first TAB press
       many matches->  Ring Bell on 1st TAB and then list all the matches*/
-      let builtins = ["echo", "exit"];
+      let builtins = BUILTINS ;
 
       /*start of the concerned word
       -line[..pos]=line before the cursor(currently typed line)

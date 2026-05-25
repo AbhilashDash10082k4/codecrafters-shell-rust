@@ -2,7 +2,6 @@ use std::{
    fs::File,
    process::{Command, Stdio},
 };
-
 use crate::utils::dual_cmmnd_pipeline::pipeline;
 /*Work of this block -take an executable file and handles it to the terminal -basically start a program
 - Command::new -prepares the file to be executed , takes in the name of the program and not the entire file path

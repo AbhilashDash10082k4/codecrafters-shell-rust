@@ -2,6 +2,7 @@ use std::{
    env,
    fs::read_dir,
    path::{Path, PathBuf},
+   str::Split,
 };
 /*2scenarios
 -user types full cmnd - take teh cmnd, take the PATH, chk the existence of that cmnd/file in that dir by iterating over all dirs from PATH separately and patching them up with the cmnd separately, chk for permissions
@@ -15,13 +16,20 @@ Path and PathBuf are easily converted to OsStr adn OsString but not to &str and 
 */
 /*Path converts str slice into path slice, join returns PathBuf
 this line `let full_path = Path::new(dir).join(cmnd)` takes cmnd as file, chks every dir for the presence of that file and if true then checks for the executability of that file*/
-pub fn find_executable(complete_cmd: &str) -> Option<PathBuf> {
-   /*? -same as match statement. Calls from fn from From trait which converts the possible Error into the form of error returned by the fn*/
+fn find_path(complete_cmd: &str) -> (Vec<String>, &str) {
    let cmnd = complete_cmd.trim();
-   let path_to_chk = env::var("PATH").unwrap_or_else(|e| format!("{e}"));
-   let entries = path_to_chk.split(":");
+   let path_to_chk: Vec<String> = env::var("PATH")
+      .unwrap_or_else(|e| format!("{e}"))
+      .split(":")
+      .map(|s| s.to_string())
+      .collect();
+   return (path_to_chk, cmnd);
+}
+pub fn find_executable(complete_cmd: &str) -> Option<PathBuf> {
+   
+   let (entries, cmnd) = find_path(complete_cmd);
    for dir in entries {
-      let full_path = Path::new(dir).join(cmnd);
+      let full_path = Path::new(&dir).join(cmnd);
 
       if !full_path.is_file() {
          /*condition for incomplete command- list all the files and match*/
@@ -35,11 +43,9 @@ pub fn find_executable(complete_cmd: &str) -> Option<PathBuf> {
 }
 pub fn find_completions(incomplete_cmd: &str) -> Vec<PathBuf> {
    /*returns list of paths that whose file names start with the incomplete cmnd*/
-   let path_to_chk = env::var("PATH").unwrap_or_else(|e| format!("{e}"));
-   let entries = path_to_chk.split(":");
+   let (entries, cmnd) = find_path(incomplete_cmd);
+   
    let mut vec_path = vec![]; //list of paths
-   let cmnd = incomplete_cmd.trim();
-
    for dir in entries {
       let list_files_in_dir_to_match = read_dir(dir);
       let Ok(entries) = list_files_in_dir_to_match else {

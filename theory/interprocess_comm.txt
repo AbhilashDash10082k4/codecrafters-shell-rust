@@ -16,11 +16,11 @@ exit() ->
         -> excessive use of resources of parent by child which would cause resource deficiency for other children
         -> parent terminates which results in termination all the other children(cascading termination)
         -> tasks by child are no more needed
-    -> 
+
 zombie process -> 
     -> a parent process runs after the child process completes. The completed child process returns it PID to the parent process and after recieving the PID the parent process runs further to completion
     -> the parent process erases the child process from the process table upon recieving the PID of child after completion of child
-    -> if a parent process does not call wait and completes after the child completes, the child process is not erased from process table even after completion as the PID of child is not caught by parent as it does not have wait().
+    -> if a parent process does not call wait and completes after the child completes, the child process is not erased from process table even after completion as the PID of child is not caught by parent as it does not have wait(). Some metadata remains after the child process is completed
     -> This is called as zombie process
     -> this is prevented by auto termination of child process after termination of parent
     -> the child process is faster
@@ -64,12 +64,13 @@ Models of IPC(Inter Process Communication)- shared memory and msg passing
     -> shared memory:- 
         -> a region in memory shared by diff processes. To share info, the data is written/read from the shared memory location.
         -> this mem region lies in the address of the Proc that created it
-        -> producer(produces info) and consumer(consumes info produced by producer) process. There has to be buffer of items for prod and consu ot work concurrently
+        -> producer(produces info) and consumer(consumes info produced by producer) process. There has to be buffer of items for prod and consu to work concurrently
         -> produ fills the shared memo by buffer items and consu empties the memory
-        -> producer can produce 1item and consumer can consume an item at the same time. The prod and consu have to be synchronzied
+        -> producer can produce 1 item and consumer can consume an item at the same time. The prod and consu have to be synchronzied
     types of buffer-
         -> unbounded:- no limit on buffer produced. Consumer can wait but producer can go on producing buffer
         -> bounded:- limit on buffer produced. Producer waits if mem is full and consum waits if buff is empty
+    
     -> msg passing:-
         -> Proc1 sends info/data to kernel and then the kernel sends the data to Proc2
         -> used by systems connected through a network
@@ -83,13 +84,13 @@ Models of IPC(Inter Process Communication)- shared memory and msg passing
             another variant-> the sender only knows the identity of the receiver and not vice versa (asymmetric)
                 -> send (P, message) == send msg to recipient P
                 -> recieve (id, msg) == recieve msg from any process(given by the var "id")
-            -> disadvantage of both the schemes(symm & asymm) == limited modularity(changing name of a process will lead to examination of other processes).
+            -> disadvantage of both the schemes(symm & asymm) == limited modularity(changing name of a process will lead to termination of other processes).
         -> indirect msging -> msg is dumped in and recieved from a mailbox(port)
             -> mailbox has its own id, is shared b/w processes
             -> send (A, msg); receive(A, msg) -> send and receive msg from mailbox A
             -> a comm link is established if only processes have a shared mailbox
             -> comm link is associated to many processes
-            -> b/w a pair of processes there may be many links each associated with a shared mailboxo
+            -> b/w a pair of processes there may be many links each associated with a shared mailbox
         -> P1 sends msg to mailbox and P2 & P3 both execute receive() on the mailbox. So, the msg is received according to these conditions (system decides the follwing) -
             -> processes are selcted arbitrarily to receive msg based on some algo(round robin)
             -> a link is allowed to be associated with 2 processes at max
@@ -121,4 +122,25 @@ dup & dup2():- takes in file descriptor as argument and returns new file descrip
         -> stdin is pointed to the lowest fd after 0,1 and 2 i.e 3
         -> since the sys takes i/p from fd == 0, the file is made to point to fd == 0
     -> dup2 is used to reassign the changed fd to its original fd, undo the changes
-    
+
+builtins vs external commands-
+    ->external
+        -> ls, wc, cat, grep
+        -> these are executable files -/bin/ls ,/usr/bin/wc
+        -> shells run these using fork + exec
+        -> new process is created and shell remains the parent
+    ->builtins
+        -> echo, cd, type, exit, pwd
+        -> these are not executable files
+        -> these are functions directly written in shell code
+        -> these run in any existing process and separate child process is not created
+        -> shell itself changes state when builtins are ranges
+    echo something | wc:
+        -> echo stdout ==> wc stdin
+        -> shell needs to capture the output of echo and feed into the wc command
+
+    Pipeline only redirects o/ps and not print them/execute them
+    BUILTINS are only output producing commands and only write to stdout and not consume anything
+    All commands are not child processes, the pipeline decides where the data flows
+
+    output of builtins are redirected buffer. IF out is not used, it will directly print to the terminal. If out is used, it can pass the output to any pipe, any other process, a file, or any buffer and to the terminal

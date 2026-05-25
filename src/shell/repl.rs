@@ -3,7 +3,10 @@ use crate::{
    commands::command::UserInput,
    utils::{cmnd_parser, completion::tab_completion::TabCompleter, execute_file},
 };
-use rustyline::{Config, Editor, history::FileHistory};
+use rustyline::{
+   Config, Editor,
+   history::{DefaultHistory},
+};
 use std::{
    cell::Cell,
    io::{self, Write},
@@ -25,7 +28,13 @@ pub fn start() {
       // .completion_show_all_if_ambiguous(true)
       // .completion_type(CompletionType::List)
       .build();
-   let mut rl = Editor::<TabCompleter, FileHistory>::with_config(config).unwrap();
+   let mut rl = match Editor::<TabCompleter, DefaultHistory>::with_config(config) {
+      Ok(editor) => editor,
+      Err(e) => {
+         println!("Failed to initialize editor: {e}");
+         return;
+      }
+   };
 
    /*registering of autocomplete logic to this Editor*/
    let tab_press = TabCompleter {
@@ -54,7 +63,8 @@ pub fn start() {
       -this line immediately shows the i/p given on terminal
       -mutex lock- locks the resources/threads until the work is done on and then unlocks it, here the resource is the terminal
       -this line flushes the line print!("$ ") and then accepts the user i/p */
-      io::stdout().flush().unwrap();
+      let mut output = io::stdout();
+      output.flush().unwrap_or_else(|e| println!("{e}"));
       let cmnd = UserInput {
          raw: format!("{line}\n"),
       };
@@ -68,32 +78,30 @@ pub fn start() {
       if args.is_empty() {
          continue;
       }
-      /*stage10- run an executable
-      stage22 -demands that the execution logic should be kept at last to 1st chk all the builtins and then chk the external commands*/
-      if execute_file::handle(&args) {
-         continue;
-      }
       //parsing the UserInput
       if exit::handle(&args) {
          break;
       }
-      if echo::handle(&args) {
+      if echo::handle(&args, &mut output) {
          continue;
       }
-
-      if type_cmd::handle(&args) {
+      if type_cmd::handle(&args, &mut output) {
          continue;
       }
 
       //stage11 -pwd
-      if pwd::handle(&args) {
+      if pwd::handle(&args, &mut output) {
          continue;
       }
       //stage 12
       if cd::handle(&args) {
          continue;
       }
-
+      /*stage10- run an executable
+      stage22 -demands that the execution logic should be kept at last to 1st chk all the builtins and then chk the external commands*/
+      if execute_file::handle(&args) {
+         continue;
+      }
       println!("{}: command not found", &args[0]);
       // eprintln!("{:?}", args);
    }

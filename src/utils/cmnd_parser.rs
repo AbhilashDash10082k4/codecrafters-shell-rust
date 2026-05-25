@@ -3,23 +3,24 @@ use crate::commands::command::UserInput;
 raw str to vec str but by not splitting based on whitespaces
 smart splitting is done considering spaces within quotes chars*/
 
-/*handling quotes
--prints the entire string between ''.
--empty '' are ignored
+/*
+handling quotes
+-prints the entire string between ''-special chars losing meaning/ spaces preserve meaning.
+-empty '' produce empty args
 -two words placed side by side are concatenated
-M1-
-if cmd.raw.starts_with("'") && cmd.raw.ends_with("'") {
-    println!("{}", cmd.raw);
-} -This wont work coz this needs context and not characters
--This is a tokenizer
-*/
-/*stage15 approach
-curr_arg_buffer, args, in_quotes
--react to white spaces, build args, store chars
+
+-backslashes outside quotes-
+   -treats chars next to it as common chars
+   -drops itself
+-backslashes in single_quotes
+   -no special meaning
+-backslashes in double_quotes
+   -escapes/drops for double_quotes and backslashes only, rest of the time treated as normal char
+-double_quotes not toggled when in single_quotes
 */
 /*stage22- to change this parser from working for only arguments to working for executables (token #0)*/
 pub fn handle(cmnd: &UserInput) -> Vec<String> {
-   let mut curr_arg_buffer = cmnd.raw.trim().chars().peekable();
+   let mut curr_arg_buffer = cmnd.raw.trim().chars();
    let mut curr_arg = String::new();
 
    /*a flag*/
@@ -31,9 +32,11 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
 
    /*stage 18- double quotes*/
    let double_quotes = '\"';
+   let single_quotes = '\'';
 
    /*stage19 - escaped*/
    let mut escaped = false;
+   let back_slash = '\\';
 
    /*3 diff behaviours
    Case1 - c = '\'' -controls the quote mode and is not added in o/p
@@ -45,13 +48,18 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
    -reason for this order -effect of these rules on parsing(scope of influencing)
    -Rules that change interpretation must run before rules that consume characters -here \ changes interpret. and quotes and spaces consume chars*/
    while let Some(c) = curr_arg_buffer.next() {
+      /*
+      -match single_quotes, double_quotes
+      -match backslashes
+      -match literal chars(normal chars)
+      */
       if escaped {
          if in_double_quotes {
             // inside double quotes: only \" and \\ are special
-            if c == '"' || c == '\\' {
+            if c == double_quotes || c == back_slash {
                curr_arg.push(c);
             } else {
-               curr_arg.push('\\');
+               curr_arg.push(back_slash);
                curr_arg.push(c);
             }
          } else {
@@ -62,10 +70,10 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
          continue;
       }
 
-      if c == '\\' {
+      if c == back_slash {
          if in_quotes {
             // literal inside single quotes
-            curr_arg.push('\\');
+            curr_arg.push(back_slash);
          } else {
             escaped = true;
          }
@@ -76,7 +84,7 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
          in_double_quotes = !in_double_quotes;
          continue;
       }
-      if c == '\'' && !in_double_quotes {
+      if c == single_quotes && !in_double_quotes {
          /*toggling the quote mode -no storing of ' in o/p
          -toggles only if not in "" */
          in_quotes = !in_quotes;
@@ -87,9 +95,9 @@ pub fn handle(cmnd: &UserInput) -> Vec<String> {
       /*handling of special ' ' that are inside the ''
       c = ' ' and not in quotes or double_quotes (outside quotes) -only 1 state can be active a t a time
       c = '\'' and in double quotes*/
-      else if c == ' ' && (!in_quotes && !in_double_quotes) {
+      else if c == ' ' && !in_quotes && !in_double_quotes {
          /*split the main cmnd and args*/
-         if !(&curr_arg.is_empty()) {
+         if !&curr_arg.is_empty() {
             /*this line -args.push(curr_arg) takes the ownership of curr_arg and the condition in if becomes invalid.*/
             args.push(curr_arg);
 

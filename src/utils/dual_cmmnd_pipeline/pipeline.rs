@@ -1,5 +1,9 @@
-use std::io::{self, pipe};
+use std::io::{Write, pipe, stdout};
 use std::process::{Command, Stdio};
+
+use crate::builtins::builtins::{BUILTINS, is_builtin};
+use crate::builtins::{echo, pwd, type_cmd};
+
 pub fn handle(user_input: &[String]) {
    let pipe_symbol = "|".to_string();
 
@@ -8,44 +12,75 @@ pub fn handle(user_input: &[String]) {
          let elems_before_pipe = &user_input[0..pipe_idx];
          let elems_after_pipe = &user_input[pipe_idx + 1..];
 
-         spawn_processes(elems_before_pipe, elems_after_pipe);
+         execute_cmnd(elems_before_pipe, elems_after_pipe);
       }
    }
 }
-fn spawn_processes(cmd1: &[String], cmd2: &[String]) {
+
+fn child_process_creation(cmd: &[String]) -> Command {
+   let mut child = Command::new(&cmd[0]);
+   if cmd.len() >= 2 {
+      child.args(&cmd[1..]);
+   }
+   child
+}
+fn builtin_executor(cmd: &[String], out: &mut impl Write) -> bool {
+   let builtins = BUILTINS;
+   for builtin in builtins {
+      /*builtins should directly execute and not spawn any external processes
+      external command spawn new processes
+      but both should still support the stdin/stdout redirection*/
+      //left side execution
+      if cmd.contains(&builtin.to_string()) {
+         match builtin {
+            "echo" => {
+               return echo::handle(cmd, out);
+            }
+            "pwd" => {
+               return pwd::handle(cmd, out);
+            }
+            "type" => {
+               return type_cmd::handle(cmd, out);
+            }
+            _ => {}
+         }
+      }
+   }
+   false
+}
+
+fn execute_cmnd(cmd1: &[String], cmd2: &[String]) {
    if let Ok(ends) = pipe() {
       let (reader, writer) = ends;
       if cmd1.is_empty() || cmd2.is_empty() {
          return;
       }
-      let mut child1 = Command::new(&cmd1[0]);
-      if cmd1.len() >= 2 {
-         child1.args(&cmd1[1..]);
-      }
-      child1.stdout(Stdio::from(writer));
 
-      let mut child2 = Command::new(&cmd2[0]);
-      if cmd2.len() >= 2 {
-         child2.args(&cmd2[1..]);
+      if is_builtin(cmd1) {
+         let mut writer = writer;
+         builtin_executor(cmd1, &mut writer);
+         drop(writer);
+      } else {
+         let mut child1 = child_process_creation(cmd1);
+         child1.stdout(Stdio::from(writer));
+         let Ok(mut c1) = child1.spawn() else {
+            return;
+         };
+         let _ = c1.wait();
       }
-      child2.stdin(Stdio::from(reader));
-      // println!("cmd1: {:?}", cmd1);
-      // println!("cmd2: {:?}", cmd2);
-      let c1 = child1.spawn();
-      let c2 = child2.spawn();
-      
-      match c1 {
-         Ok(mut c) => {
-            let _ = c.wait();
-         }
-         _ => {
-            match c2 {
-               Ok(mut c) => {
-                  let _ = c.wait();
-               }
-               _=>{}
-            }
-         }
+
+      //for right of pipe
+      if is_builtin(cmd2) {
+         let mut out = stdout();
+         builtin_executor(cmd2, &mut out);
+      } else {
+         let mut child2 = child_process_creation(cmd2);
+         child2.stdin(Stdio::from(reader));
+
+         let Ok(mut c2) = child2.spawn() else {
+            return;
+         };
+         let _= c2.wait();
       }
    }
 }

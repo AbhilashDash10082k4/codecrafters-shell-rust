@@ -29,7 +29,10 @@ pub fn autocomplete(prefix: &str, tab_cnt: &Cell<usize>, matches: Vec<&str>) -> 
          //tab is making no progress- continue with bell press
          if tab_cnt.get() == 1 {
             print!("\x07");
-            io::stdout().flush().unwrap()
+            let _ = match io::stdout().flush() {
+               Ok(t) => t,
+               _ => {}
+            };
          } else if tab_cnt.get() == 2 {
             println!("\n{}", matches.join("  "));
             println!("$ {}", prefix);
