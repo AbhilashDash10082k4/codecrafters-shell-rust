@@ -56,31 +56,31 @@ fn execute_cmnd(cmd1: &[String], cmd2: &[String]) {
          return;
       }
 
-      //for left of pipe
-      if is_builtin(cmd1) {
+      if is_builtin(cmd1) || is_builtin(cmd2) {
+         //for left of pipe
          let mut writer = &writer;
          builtin_executor(cmd1, &mut writer);
-      }
-      //for right of pipe
-      if is_builtin(cmd2) {
+
+         //for right of pipe
+
          let mut out = stdout();
          builtin_executor(cmd2, &mut out);
+      } else {
+         let mut child1 = child_process_creation(cmd1);
+         child1.stdout(Stdio::from(writer));
+         let Ok(mut c1) = child1.spawn() else {
+            return;
+         };
+
+         let mut child2 = child_process_creation(cmd2);
+         child2.stdin(Stdio::from(reader));
+
+         let Ok(mut c2) = child2.spawn() else {
+            return;
+         };
+
+         let _ = c1.wait();
+         let _ = c2.wait();
       }
-      
-      let mut child1 = child_process_creation(cmd1);
-      child1.stdout(Stdio::from(writer));
-      let Ok(mut c1) = child1.spawn() else {
-         return;
-      };
-
-      let mut child2 = child_process_creation(cmd2);
-      child2.stdin(Stdio::from(reader));
-
-      let Ok(mut c2) = child2.spawn() else {
-         return;
-      };
-
-      let _ = c1.wait();
-      let _ = c2.wait();
    }
 }
