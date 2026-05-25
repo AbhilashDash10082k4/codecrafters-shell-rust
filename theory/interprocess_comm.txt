@@ -144,3 +144,5 @@ builtins vs external commands-
     All commands are not child processes, the pipeline decides where the data flows
 
     output of builtins are redirected buffer. IF out is not used, it will directly print to the terminal. If out is used, it can pass the output to any pipe, any other process, a file, or any buffer and to the terminal
+
+    pipelines are streaming systems -they continuously produce - consume the data from buffer
