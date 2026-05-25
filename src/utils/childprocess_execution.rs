@@ -24,10 +24,6 @@ pub fn handle(program_name: &str, args: &Vec<String>) {
    if args.is_empty() {
       return;
    }
-   if args.contains(&"|".to_string()) {
-      pipeline::handle(args);
-      return; //if not returned, it will execute the further code which will lead to error
-   }
    let mut file_name = None;
    let mut cmnd_args = Vec::new();
    let mut i = 1;
@@ -90,7 +86,10 @@ pub fn handle(program_name: &str, args: &Vec<String>) {
          child.stderr(Stdio::inherit());
       }
    }
-
+   if args.contains(&"|".to_string()) {
+      pipeline::handle(args);
+      return; //if not returned, it will execute the further code which will lead to error
+   }
    if let Ok(mut c) = child.spawn() {
       let _ = c.wait();
    }
