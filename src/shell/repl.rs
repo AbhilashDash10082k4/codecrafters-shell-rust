@@ -1,7 +1,7 @@
 use crate::{
    builtins::{cd, echo, exit, pwd, type_cmd},
    commands::command::UserInput,
-   utils::{cmnd_parser, completion::tab_completion::TabCompleter, execute_file},
+   utils::{cmnd_parser, completion::tab_completion::TabCompleter, dual_cmmnd_pipeline::pipeline, execute_file},
 };
 use rustyline::{
    Config, Editor,
@@ -78,6 +78,7 @@ pub fn start() {
       if args.is_empty() {
          continue;
       }
+      pipeline::handle(&args);
       //parsing the UserInput
       if exit::handle(&args) {
          break;
