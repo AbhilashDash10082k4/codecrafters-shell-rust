@@ -13,7 +13,7 @@ pub fn handle(cmd: &[String], out:&mut impl Write) -> bool {
 
    // Builtin check
    if builtins.contains(&command_to_be_printed) {
-      let _= writeln!(out, "{}","{command_to_be_printed} is a shell builtin"); //writes to the buffer out
+      let _= writeln!(out, "{} is a shell builtin",command_to_be_printed); //writes to the buffer out
       return true;
    }
 
@@ -25,7 +25,7 @@ pub fn handle(cmd: &[String], out:&mut impl Write) -> bool {
       let _ = writeln!(out, "{} is {}",command_to_be_printed,file.display());
       return true;
    } else {
-      println!("{command_to_be_printed}: not found");
+      let _= writeln!(out,"{command_to_be_printed}: not found");
       return false;
    }
 }

@@ -1,12 +1,12 @@
 use crate::{
    builtins::{cd, echo, exit, pwd, type_cmd},
    commands::command::UserInput,
-   utils::{cmnd_parser, completion::tab_completion::TabCompleter, dual_cmmnd_pipeline::pipeline, execute_file},
+   utils::{
+      cmnd_parser, completion::tab_completion::TabCompleter, dual_cmmnd_pipeline::pipeline,
+      execute_file,
+   },
 };
-use rustyline::{
-   Config, Editor,
-   history::{DefaultHistory},
-};
+use rustyline::{Config, Editor, history::DefaultHistory};
 use std::{
    cell::Cell,
    io::{self, Write},
@@ -78,7 +78,10 @@ pub fn start() {
       if args.is_empty() {
          continue;
       }
-      pipeline::handle(&args);
+      if args.contains(&"|".to_string()) {
+         pipeline::handle(&args);
+         continue;
+      }
       //parsing the UserInput
       if exit::handle(&args) {
          break;
