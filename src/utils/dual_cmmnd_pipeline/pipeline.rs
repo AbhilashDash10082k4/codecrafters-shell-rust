@@ -31,7 +31,7 @@ fn builtin_executor(cmd: &[String], out: &mut impl Write) -> bool {
       external command spawn new processes
       but both should still support the stdin/stdout redirection*/
       //left side execution
-      if cmd.contains(&builtin.to_string()) {
+      if cmd[0] == builtin {
          match builtin {
             "echo" => {
                return echo::handle(cmd, out);
@@ -56,31 +56,36 @@ fn execute_cmnd(cmd1: &[String], cmd2: &[String]) {
          return;
       }
 
-      if is_builtin(cmd1) || is_builtin(cmd2) {
+      let left_child = if is_builtin(cmd1) {
          //for left of pipe
-         let mut writer = &writer;
+         let mut writer = writer;
          builtin_executor(cmd1, &mut writer);
-
-         //for right of pipe
-
-         let mut out = stdout();
-         builtin_executor(cmd2, &mut out);
+         drop(writer);
+         None
       } else {
          let mut child1 = child_process_creation(cmd1);
          child1.stdout(Stdio::from(writer));
-         let Ok(mut c1) = child1.spawn() else {
-            return;
-         };
+         child1.spawn().ok()
+      };
 
+      let right_child = if is_builtin(cmd2) {
+         //for right of pipe
+         let mut out = stdout();
+         builtin_executor(cmd2, &mut out);
+         None
+      } else {
          let mut child2 = child_process_creation(cmd2);
          child2.stdin(Stdio::from(reader));
+         child2.spawn().ok()
+      };
+      // wait left
+      if let Some(mut child) = left_child {
+         let _ = child.wait();
+      }
 
-         let Ok(mut c2) = child2.spawn() else {
-            return;
-         };
-
-         let _ = c1.wait();
-         let _ = c2.wait();
+      // wait right
+      if let Some(mut child) = right_child {
+         let _ = child.wait();
       }
    }
 }
